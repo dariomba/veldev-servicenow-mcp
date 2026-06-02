@@ -2,7 +2,27 @@
   "name": "@veldev/servicenow-mcp",
   "version": "0.1.0",
   "description": "Open-source MCP server for ServiceNow — read and write tools for catalog, business rules, script includes, update sets, and more",
+  "license": "MIT",
   "type": "module",
+  "keywords": [
+    "servicenow",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "llm",
+    "service-catalog"
+  ],
+  "homepage": "https://github.com/dariomba/veldev-servicenow-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dariomba/veldev-servicenow-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dariomba/veldev-servicenow-mcp/issues"
+  },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",

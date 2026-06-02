@@ -1,5 +1,8 @@
 # Veldev ServiceNow MCP Server
 
+[![CI](https://github.com/dariomba/veldev-servicenow-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/dariomba/veldev-servicenow-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An open-source [Model Context Protocol](https://modelcontextprotocol.io) server for ServiceNow. Connect any MCP-compatible AI client (Claude, Cursor, VS Code, etc.) to your ServiceNow instance and interact with it in plain English.
 
 Built and maintained by **Veldev** — an AI assistant for ServiceNow developers.
