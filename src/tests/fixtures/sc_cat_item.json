@@ -1,0 +1,39 @@
+{
+  "price": {
+    "display_value": "€0.00",
+    "currency_display_value": "EUR;0.00",
+    "value": "0"
+  },
+  "order": {
+    "display_value": "100",
+    "value": "100"
+  },
+  "active": {
+    "display_value": "true",
+    "value": "true"
+  },
+  "name": {
+    "display_value": "IT Request",
+    "value": "IT Request"
+  },
+  "short_description": {
+    "display_value": null,
+    "value": ""
+  },
+  "description": {
+    "display_value": null,
+    "value": ""
+  },
+  "sys_id": {
+    "display_value": "7bad3ce593700310eb4cf83bdd03d69d",
+    "value": "7bad3ce593700310eb4cf83bdd03d69d"
+  },
+  "sys_scope": {
+    "display_value": "Global",
+    "value": "global"
+  },
+  "category": {
+    "display_value": "",
+    "value": ""
+  }
+}

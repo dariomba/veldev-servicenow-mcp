@@ -1,0 +1,992 @@
+[
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Requested For",
+      "value": "31"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "50",
+      "value": "50"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Requested For",
+      "value": "Requested For"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "requested_for",
+      "value": "requested_for"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "32be30a993700310eb4cf83bdd03d671",
+      "value": "32be30a993700310eb4cf83bdd03d671"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Container Start",
+      "value": "19"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "100",
+      "value": "100"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Request Details",
+      "value": "Request Details"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "container_request_details",
+      "value": "container_request_details"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "d2187fd893010310eb4cf83bdd03d602",
+      "value": "d2187fd893010310eb4cf83bdd03d602"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Select Box",
+      "value": "5"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "110",
+      "value": "110"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Request Type",
+      "value": "Request Type"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "request_type",
+      "value": "request_type"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "5a183fd893010310eb4cf83bdd03d674",
+      "value": "5a183fd893010310eb4cf83bdd03d674"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Multi Line Text",
+      "value": "2"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "130",
+      "value": "130"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": "Please provide as much detail as possible about your request.",
+      "value": "Please provide as much detail as possible about your request."
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Full Description",
+      "value": "Full Description"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "full_description",
+      "value": "full_description"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "sys_id": {
+      "display_value": "de187fd893010310eb4cf83bdd03d658",
+      "value": "de187fd893010310eb4cf83bdd03d658"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Container End",
+      "value": "20"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "140",
+      "value": "140"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "End Request Details",
+      "value": "End Request Details"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "container_request_details_end",
+      "value": "container_request_details_end"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "9e187fd893010310eb4cf83bdd03d60e",
+      "value": "9e187fd893010310eb4cf83bdd03d60e"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Single Line Text",
+      "value": "6"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "150",
+      "value": "150"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": "Since you selected 'Other', please describe your request type here.",
+      "value": "Since you selected 'Other', please describe your request type here."
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Please Specify",
+      "value": "Please Specify"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "please_specify",
+      "value": "please_specify"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "sys_id": {
+      "display_value": "d6187fd893010310eb4cf83bdd03d634",
+      "value": "d6187fd893010310eb4cf83bdd03d634"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Container Start",
+      "value": "19"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "200",
+      "value": "200"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Additional Info",
+      "value": "Additional Info"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "container_additional_info",
+      "value": "container_additional_info"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "12183fd893010310eb4cf83bdd03d6ad",
+      "value": "12183fd893010310eb4cf83bdd03d6ad"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Select Box",
+      "value": "5"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "210",
+      "value": "210"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "default_value": {
+      "display_value": "medium",
+      "value": "medium"
+    },
+    "question_text": {
+      "display_value": "Priority",
+      "value": "Priority"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "priority",
+      "value": "priority"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "96187fd893010310eb4cf83bdd03d640",
+      "value": "96187fd893010310eb4cf83bdd03d640"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": "When do you need this completed?",
+      "value": "When do you need this completed?"
+    },
+    "type": {
+      "display_value": "Date",
+      "value": "9"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "220",
+      "value": "220"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Required By Date",
+      "value": "Required By Date"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "required_by_date",
+      "value": "required_by_date"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "d2187fd893010310eb4cf83bdd03d64d",
+      "value": "d2187fd893010310eb4cf83bdd03d64d"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Attachment",
+      "value": "33"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "230",
+      "value": "230"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": "Upload any relevant documents, screenshots, or files to support your request.",
+      "value": "Upload any relevant documents, screenshots, or files to support your request."
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "Attach Supporting Document",
+      "value": "Attach Supporting Document"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "attachment",
+      "value": "attachment"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "sys_id": {
+      "display_value": "1e187fd893010310eb4cf83bdd03d627",
+      "value": "1e187fd893010310eb4cf83bdd03d627"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  },
+  {
+    "tooltip": {
+      "display_value": null,
+      "value": ""
+    },
+    "type": {
+      "display_value": "Container End",
+      "value": "20"
+    },
+    "lookup_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "read_only": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "order": {
+      "display_value": "240",
+      "value": "240"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "help_text": {
+      "display_value": null,
+      "value": ""
+    },
+    "mandatory": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "default_value": {
+      "display_value": "",
+      "value": ""
+    },
+    "question_text": {
+      "display_value": "End Additional Info",
+      "value": "End Additional Info"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "reference_qual": {
+      "display_value": "",
+      "value": ""
+    },
+    "lookup_label": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference": {
+      "display_value": "",
+      "value": ""
+    },
+    "reference_qual_condition": {
+      "display_value": "",
+      "value": ""
+    },
+    "name": {
+      "display_value": "container_additional_info_end",
+      "value": "container_additional_info_end"
+    },
+    "hidden": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "show_help": {
+      "display_value": "false",
+      "value": "false"
+    },
+    "sys_id": {
+      "display_value": "5a187fd893010310eb4cf83bdd03d61b",
+      "value": "5a187fd893010310eb4cf83bdd03d61b"
+    },
+    "variable_set": {
+      "display_value": "",
+      "value": ""
+    },
+    "list_table": {
+      "display_value": "",
+      "value": ""
+    },
+    "use_reference_qualifier": {
+      "display_value": "Simple",
+      "value": "simple"
+    }
+  }
+]

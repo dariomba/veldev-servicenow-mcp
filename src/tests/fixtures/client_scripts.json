@@ -1,0 +1,70 @@
+[
+  {
+    "type": {
+      "display_value": "onLoad",
+      "value": "onLoad"
+    },
+    "sys_id": {
+      "display_value": "0148f31c93010310eb4cf83bdd03d6ee",
+      "value": "0148f31c93010310eb4cf83bdd03d6ee"
+    },
+    "ui_type": {
+      "display_value": "All",
+      "value": "10"
+    },
+    "applies_to": {
+      "display_value": "A Catalog Item",
+      "value": "item"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "script": {
+      "display_value": "function onLoad() {\n  var priorityField = g_form.getControl('priority');\n  if (priorityField && !g_form.getValue('priority')) {\n    g_form.setValue('priority', 'medium');\n  }\n}",
+      "value": "function onLoad() {\n  var priorityField = g_form.getControl('priority');\n  if (priorityField && !g_form.getValue('priority')) {\n    g_form.setValue('priority', 'medium');\n  }\n}"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "name": {
+      "display_value": "Set Default Priority to Medium",
+      "value": "Set Default Priority to Medium"
+    }
+  },
+  {
+    "type": {
+      "display_value": "onLoad",
+      "value": "onLoad"
+    },
+    "sys_id": {
+      "display_value": "c548331c93010310eb4cf83bdd03d663",
+      "value": "c548331c93010310eb4cf83bdd03d663"
+    },
+    "ui_type": {
+      "display_value": "All",
+      "value": "10"
+    },
+    "applies_to": {
+      "display_value": "A Catalog Item",
+      "value": "item"
+    },
+    "active": {
+      "display_value": "true",
+      "value": "true"
+    },
+    "script": {
+      "display_value": "function onLoad() {\n  var priorityField = g_form.getControl('priority');\n  if (priorityField && !g_form.getValue('priority')) {\n    g_form.setValue('priority', 'medium');\n  }\n}",
+      "value": "function onLoad() {\n  var priorityField = g_form.getControl('priority');\n  if (priorityField && !g_form.getValue('priority')) {\n    g_form.setValue('priority', 'medium');\n  }\n}"
+    },
+    "cat_item": {
+      "display_value": "IT Request",
+      "value": "7bad3ce593700310eb4cf83bdd03d69d"
+    },
+    "name": {
+      "display_value": "Set Default Priority to Medium",
+      "value": "Set Default Priority to Medium"
+    }
+  }
+]

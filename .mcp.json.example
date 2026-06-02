@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "servicenow": {
+      "command": "npx",
+      "args": ["tsx", "src/index.ts"],
+      "env": {
+        "TRANSPORT": "stdio",
+        "SN_INSTANCE": "https://your-instance.service-now.com",
+        "SN_USERNAME": "admin",
+        "SN_PASSWORD": "yourpassword"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "servicenow": {
+      "command": "npx",
+      "args": ["tsx", "src/index.ts"],
+      "env": {
+        "TRANSPORT": "stdio"
+      }
+    }
+  }
+}
