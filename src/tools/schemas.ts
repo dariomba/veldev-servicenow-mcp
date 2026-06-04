@@ -327,6 +327,23 @@ const CatalogVariableBase = z.object({
     .describe(
       "type=19 (Container Start) ONLY. Controls how variables inside the container are distributed. 'normal' = 1 column (default). '2across' = 2 columns, variables fill left-to-right. '2down' = 2 columns, variables fill top-to-bottom on each side. Omit to keep the default single-column layout.",
     ),
+  map_to_field: z
+    .boolean()
+    .optional()
+    .describe(
+      'Record Producer ONLY. When true, the variable value is automatically mapped to a field ' +
+        'on the target table record upon submission. Pair with `field`. ' +
+        'Has no effect on standard catalog items. ' +
+        'Does NOT work when the variable belongs to a variable set — use the Record Producer script instead.',
+    ),
+  field: z
+    .string()
+    .optional()
+    .describe(
+      'Record Producer ONLY. Column name on the target table to map this variable value to. ' +
+        'Only set when map_to_field=true. Must be the exact field name (snake_case), e.g. "short_description", "urgency", "caller_id". ' +
+        'Do NOT pass a sys_id or a display value.',
+    ),
 });
 
 export const CatalogVariableCreate = CatalogVariableBase.extend({
@@ -743,6 +760,158 @@ export const UiPolicyActionUpdate = UiPolicyActionBase.partial().extend({
     .string()
     .min(1)
     .describe('sys_id of the catalog_ui_policy_action record to update.'),
+});
+
+// ── Record Producer ───────────────────────────────────────────────────────────
+
+const RecordProducerBase = z.object({
+  name: z.string().min(1).describe('Display name of the record producer.'),
+  table_name: z
+    .string()
+    .min(1)
+    .describe(
+      'Internal table name where the record will be generated, e.g. "incident". ' +
+        'Call resolve_table if you need to look up the table name.',
+    ),
+  short_description: z
+    .string()
+    .optional()
+    .describe('One-line summary shown in the catalog browse view.'),
+  description: z
+    .string()
+    .optional()
+    .describe('Full description of the record producer.'),
+  catalog_sys_id: z
+    .string()
+    .optional()
+    .describe(
+      'sys_id of the Service Catalog this record producer belongs to. ' +
+        'Call list_catalogs to look it up by name.',
+    ),
+  category_sys_id: z
+    .string()
+    .optional()
+    .describe(
+      'sys_id of the category (sc_category record). ' +
+        'Call list_catalog_categories to look it up by name.',
+    ),
+  active: z
+    .boolean()
+    .optional()
+    .describe('Whether the record producer is active.'),
+  order: z
+    .number()
+    .int()
+    .optional()
+    .describe('Sort order within the category.'),
+  redirect_url: z
+    .enum(['generated_record', 'catalog_home'])
+    .optional()
+    .describe(
+      '"generated_record" redirects to the created record after submission (default). ' +
+        '"catalog_home" redirects to the catalog homepage.',
+    ),
+  script: z
+    .string()
+    .optional()
+    .describe(
+      'Server-side JavaScript executed BEFORE the record is created (pre-insert). ' +
+        'Use `current` to set fields on the destination record (e.g. current.short_description = producer.var1). ' +
+        'Use `producer.var1` to read form variables. ' +
+        'Never call current.update() or current.insert() — the Record Producer handles that. ' +
+        'Runs AFTER variable mappings, so it can override mapped values. ' +
+        'If the logic is reused across producers, extract it into a Script Include. ' +
+        'If omitted, the default boilerplate comment block is used.',
+    ),
+  post_insert_script: z
+    .string()
+    .optional()
+    .describe(
+      'Server-side JavaScript executed AFTER the record has been created (post-insert). ' +
+        '`current` is the already-saved GlideRecord — call current.update() to persist further changes. ' +
+        '`producer.var1` accesses form variables. `cat_item` is the Record Producer itself. ' +
+        'If omitted, the default boilerplate comment block is used.',
+    ),
+  no_save_as_draft: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, the record producer is NOT saved as a draft (hides the Draft watermark in the catalog). ' +
+        'Set to true to publish the item without the draft indicator.',
+    ),
+  flow_designer_flow: z
+    .string()
+    .optional()
+    .describe(
+      'sys_id of the Flow Designer flow (sys_hub_flow) to run after submission. ' +
+        'Call list_flows to look it up by name. ' +
+        'Mutually exclusive with workflow — set only one.',
+    ),
+  workflow: z
+    .string()
+    .optional()
+    .describe(
+      'sys_id of the classic Workflow (wf_workflow) to run after submission. ' +
+        'Call list_workflows to look it up by name. ' +
+        'Mutually exclusive with flow_designer_flow — set only one.',
+    ),
+  mandatory_attachment: z
+    .boolean()
+    .optional()
+    .describe('When true, the user must attach a file before submitting.'),
+  hide_sp: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, the record producer is hidden in the Service Portal.',
+    ),
+  no_search: z
+    .boolean()
+    .optional()
+    .describe(
+      'When true, the record producer is excluded from catalog search results.',
+    ),
+  availability: z
+    .enum(['on_desktop', 'on_mobile', 'both', 'none'])
+    .optional()
+    .describe(
+      'Where the record producer is available. ' +
+        '"on_desktop" = classic portal only (default). ' +
+        '"on_mobile" = mobile only. ' +
+        '"both" = classic portal and mobile. ' +
+        '"none" = hidden everywhere.',
+    ),
+});
+
+export const RecordProducerCreate = RecordProducerBase.extend({
+  active: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Whether the record producer is active. Defaults to true.'),
+  order: z
+    .number()
+    .int()
+    .optional()
+    .default(100)
+    .describe('Sort order within the category. Defaults to 100.'),
+  redirect_url: z
+    .enum(['generated_record', 'catalog_home'])
+    .optional()
+    .default('generated_record')
+    .describe(
+      '"generated_record" redirects to the created record after submission (default). ' +
+        '"catalog_home" redirects to the catalog homepage.',
+    ),
+});
+
+export const RecordProducerUpdate = RecordProducerBase.partial().extend({
+  sys_id: z
+    .string()
+    .min(1)
+    .describe(
+      'sys_id of the record producer (sc_cat_item_producer) to update.',
+    ),
 });
 
 //Business Rule ───────────────────────────────────────────────────────────────

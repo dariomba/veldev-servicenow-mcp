@@ -377,6 +377,9 @@ export function registerCatalogWriteTools(
             if (v.display_title !== undefined)
               body.display_title = String(v.display_title);
             if (v.layout !== undefined) body.layout = v.layout;
+            if (v.map_to_field !== undefined)
+              body.map_to_field = String(v.map_to_field);
+            if (v.field !== undefined) body.field = v.field;
 
             return client.createRecord<{ sys_id: SnReference }>(
               'item_option_new',
@@ -673,6 +676,9 @@ export function registerCatalogWriteTools(
             if (v.display_title !== undefined)
               body.display_title = String(v.display_title);
             if (v.layout !== undefined) body.layout = v.layout;
+            if (v.map_to_field !== undefined)
+              body.map_to_field = String(v.map_to_field);
+            if (v.field !== undefined) body.field = v.field;
             return client.patchRecord<unknown>(
               'item_option_new',
               v.sys_id,
