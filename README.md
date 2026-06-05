@@ -11,12 +11,13 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-27 tools across 7 domains:
+29 tools across 8 domains:
 
 | Domain | What it covers |
 |---|---|
 | **Catalog (read)** | Browse items, get full definitions with variables, UI policies, client scripts, user criteria, variable sets |
 | **Catalog (write)** | Create items, add/update variables, manage variable sets |
+| **Record producers** | Create and update record producers (catalog forms that generate records in any table) |
 | **UI policies** | Create and update catalog UI policies and their actions |
 | **Client scripts** | Create and manage catalog client scripts |
 | **Script includes** | Create reusable server-side script includes |
@@ -153,6 +154,8 @@ What client scripts are on the New Employee Onboarding item?
 Create a new catalog item called "VPN Access Request" with a text variable for business justification
 
 Create a business rule on incident that sets priority to 1 when impact and urgency are both 1
+
+Create a record producer called "New Hire Equipment" that generates an sc_req_item record, with a pre-insert script that maps the selected laptop model to the item field
 ```
 
 ---
