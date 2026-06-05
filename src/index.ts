@@ -29,6 +29,7 @@ import { registerCatalogWriteTools } from './tools/catalog-write.js';
 import { registerFixScriptTools } from './tools/fix-script.js';
 import { registerRecordProducerTools } from './tools/record-producer.js';
 import { registerScriptIncludeTools } from './tools/script-include.js';
+import { registerTableCrudTools } from './tools/table-crud.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
 import { registerUpdateSetTools } from './tools/update-sets.js';
 
@@ -308,6 +309,7 @@ function buildServer(credentials: ServiceNowConfig): McpServer {
   registerUpdateSetTools(server, snClient);
   registerBackgroundScriptTools(server, snClient);
   registerFixScriptTools(server, snClient);
+  registerTableCrudTools(server, snClient);
 
   return server;
 }

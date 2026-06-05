@@ -109,6 +109,7 @@ export class ServiceNowClient {
     query: string,
     fields?: string[],
     limit = 100,
+    offset?: number,
   ): Promise<T[]> {
     const params: Record<string, string> = {
       sysparm_query: query,
@@ -116,6 +117,9 @@ export class ServiceNowClient {
     };
     if (fields?.length) {
       params.sysparm_fields = fields.join(',');
+    }
+    if (offset !== undefined) {
+      params.sysparm_offset = String(offset);
     }
     return this.request<T[]>(`/table/${table}`, params);
   }

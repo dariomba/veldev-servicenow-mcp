@@ -212,8 +212,6 @@ export function registerFixScriptTools(
           `if (gr.get('${sys_id}')) {`,
           `    var evaluator = new GlideScopedEvaluator();`,
           `    evaluator.evaluateScript(gr, 'script');`,
-          `} else {`,
-          `    gs.log('MCP run_fix_script: record not found — sys_id=${sys_id}', 'MCP');`,
           `}`,
         ].join('\n');
 
