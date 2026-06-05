@@ -21,6 +21,7 @@ import { registerBusinessRuleTools } from './tools/business-rule.js';
 import { registerCatalogClientScriptTools } from './tools/catalog-client-script.js';
 import { registerCatalogReadTools } from './tools/catalog-read.js';
 import { registerCatalogWriteTools } from './tools/catalog-write.js';
+import { registerRecordProducerTools } from './tools/record-producer.js';
 import { registerScriptIncludeTools } from './tools/script-include.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
 import { registerUpdateSetTools } from './tools/update-sets.js';
@@ -283,6 +284,7 @@ function buildServer(credentials: ServiceNowConfig): McpServer {
 
   registerCatalogReadTools(server, snClient);
   registerCatalogWriteTools(server, snClient);
+  registerRecordProducerTools(server, snClient);
   registerUiPolicyTools(server, snClient);
   registerCatalogClientScriptTools(server, snClient);
   registerScriptIncludeTools(server, snClient);
