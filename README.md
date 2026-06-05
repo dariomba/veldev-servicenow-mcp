@@ -26,6 +26,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
 
+| **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 
 ---
 
