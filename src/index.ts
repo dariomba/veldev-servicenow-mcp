@@ -21,10 +21,12 @@ import {
 } from './config/sn-config.js';
 import { log } from './logger.js';
 import { sessionStore } from './session-store.js';
+import { registerBackgroundScriptTools } from './tools/background-script.js';
 import { registerBusinessRuleTools } from './tools/business-rule.js';
 import { registerCatalogClientScriptTools } from './tools/catalog-client-script.js';
 import { registerCatalogReadTools } from './tools/catalog-read.js';
 import { registerCatalogWriteTools } from './tools/catalog-write.js';
+import { registerFixScriptTools } from './tools/fix-script.js';
 import { registerRecordProducerTools } from './tools/record-producer.js';
 import { registerScriptIncludeTools } from './tools/script-include.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
@@ -304,6 +306,8 @@ function buildServer(credentials: ServiceNowConfig): McpServer {
   registerScriptIncludeTools(server, snClient);
   registerBusinessRuleTools(server, snClient);
   registerUpdateSetTools(server, snClient);
+  registerBackgroundScriptTools(server, snClient);
+  registerFixScriptTools(server, snClient);
 
   return server;
 }
