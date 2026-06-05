@@ -1,6 +1,10 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
-import type { ServiceNowConfig } from '../clients/servicenow.js';
+import {
+  formatConfigError,
+  type ServiceNowConfig,
+  serviceNowConfigSchema,
+} from '../config/sn-config.js';
 import { log } from '../logger.js';
 
 export type CredentialResult =
@@ -46,21 +50,24 @@ export class HeaderCredentialProvider implements CredentialProvider {
       };
     }
 
-    const instance = req.headers['x-sn-instance'] as string | undefined;
-    const username = req.headers['x-sn-username'] as string | undefined;
-    const password = req.headers['x-sn-password'] as string | undefined;
+    const result = serviceNowConfigSchema.safeParse({
+      authType: req.headers['x-sn-auth-type'] ?? 'basic',
+      grantType: req.headers['x-sn-grant-type'] ?? 'password',
+      instanceUrl: req.headers['x-sn-instance'],
+      clientId: req.headers['x-sn-client-id'],
+      clientSecret: req.headers['x-sn-client-secret'],
+      username: req.headers['x-sn-username'],
+      password: req.headers['x-sn-password'],
+    });
 
-    if (!instance || !username || !password) {
+    if (!result.success) {
       return {
         ok: false,
         status: 400,
-        error: 'missing ServiceNow credential headers',
+        error: `invalid ServiceNow credential headers: ${formatConfigError(result.error)}`,
       };
     }
 
-    return {
-      ok: true,
-      credentials: { instanceUrl: instance, username, password },
-    };
+    return { ok: true, credentials: result.data };
   }
 }

@@ -34,6 +34,7 @@ describe('ServiceNowClient', () => {
 
   beforeEach(() => {
     client = new ServiceNowClient({
+      authType: 'basic',
       instanceUrl: INSTANCE_URL,
       username: USERNAME,
       password: PASSWORD,
@@ -103,6 +104,7 @@ describe('ServiceNowClient', () => {
 
     it('strips trailing slash from instanceUrl', async () => {
       const trailingClient = new ServiceNowClient({
+        authType: 'basic',
         instanceUrl: `${INSTANCE_URL}/`,
         username: USERNAME,
         password: PASSWORD,
@@ -265,6 +267,49 @@ describe('ServiceNowClient', () => {
   describe('getUsername', () => {
     it('returns the configured username', () => {
       expect(client.getUsername()).toBe(USERNAME);
+    });
+  });
+
+  describe('OAuth requests', () => {
+    function rawOkResponse(obj: unknown) {
+      return {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: async () => obj,
+        text: async () => JSON.stringify(obj),
+      };
+    }
+
+    it('re-authenticates and retries once on a 401', async () => {
+      const oauthClient = new ServiceNowClient({
+        authType: 'oauth',
+        grantType: 'password',
+        instanceUrl: INSTANCE_URL,
+        clientId: 'client-id',
+        clientSecret: 'client-secret',
+        username: USERNAME,
+        password: PASSWORD,
+      });
+
+      mockFetch
+        .mockResolvedValueOnce(
+          rawOkResponse({ access_token: 'tok-1', expires_in: 1800 }),
+        )
+        .mockResolvedValueOnce(errorResponse(401, 'Unauthorized', 'expired'))
+        .mockResolvedValueOnce(
+          rawOkResponse({ access_token: 'tok-2', expires_in: 1800 }),
+        )
+        .mockResolvedValueOnce(okResponse([{ number: { value: 'INC001' } }]));
+
+      const result = await oauthClient.listRecords('incident', 'active=true');
+
+      expect(result).toHaveLength(1);
+      expect(mockFetch).toHaveBeenCalledTimes(4);
+      // The retried data request carries the freshly fetched bearer token.
+      expect(mockFetch.mock.calls[3][1].headers.Authorization).toBe(
+        'Bearer tok-2',
+      );
     });
   });
 

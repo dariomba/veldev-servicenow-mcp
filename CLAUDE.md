@@ -56,9 +56,16 @@ No hook enforces this — it is entirely your responsibility. Skipping step 1 me
 | Variable | Required | Description |
 |---|---|---|
 | `SN_INSTANCE` | ✅ | `https://dev12345.service-now.com` |
+| `SN_AUTH_TYPE` | ❌ | `basic` (default) or `oauth` |
 | `SN_USERNAME` | ✅ | ServiceNow username |
 | `SN_PASSWORD` | ✅ | ServiceNow password |
+| `SN_CLIENT_ID` | ✅ | OAuth client ID from Application Registry |
+| `SN_CLIENT_SECRET` | ✅ | OAuth client secret |
+| `SN_GRANT_TYPE` | ❌ | `password` (default) or `client_credentials` |
 | `PORT` | ❌ | HTTP port (default `3000`) |
 | `TRANSPORT` | ❌ | `http` (default) or `stdio` |
 | `CREDENTIAL_PROVIDER` | ❌ | `env` (dev default) or `header` (gateway mode) |
 | `GATEWAY_SECRET` | ❌ | Required when `CREDENTIAL_PROVIDER=header` |
+
+¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
+² Required when `SN_AUTH_TYPE=oauth`
