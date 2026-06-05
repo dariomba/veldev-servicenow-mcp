@@ -24,11 +24,15 @@ const transport = optional('TRANSPORT', 'http');
 const isDev = environment === 'development';
 const isStdio = transport === 'stdio';
 
-const snCredsPresent = !!(
-  process.env.SN_INSTANCE &&
-  process.env.SN_USERNAME &&
-  process.env.SN_PASSWORD
-);
+// Enum validity (basic|oauth, password|client_credentials) is enforced by the
+// ServiceNow config schema when credentials are actually built.
+const snAuthType = optional('SN_AUTH_TYPE', 'basic');
+
+const snCredsPresent =
+  !!process.env.SN_INSTANCE &&
+  (snAuthType === 'oauth'
+    ? !!(process.env.SN_CLIENT_ID && process.env.SN_CLIENT_SECRET)
+    : !!(process.env.SN_USERNAME && process.env.SN_PASSWORD));
 const defaultProvider: CredentialProviderType =
   (isDev || isStdio) && snCredsPresent ? 'env' : 'header';
 
@@ -41,6 +45,8 @@ if (!validProviders.includes(rawProvider as CredentialProviderType)) {
   process.exit(1);
 }
 
+const snGrantType = optional('SN_GRANT_TYPE', 'password');
+
 export const config = {
   port: optionalInt('PORT', 3000),
   transport,
@@ -52,6 +58,10 @@ export const config = {
     instance: optional('SN_INSTANCE', ''),
     username: optional('SN_USERNAME', ''),
     password: optional('SN_PASSWORD', ''),
+    authType: snAuthType as 'basic' | 'oauth',
+    clientId: optional('SN_CLIENT_ID', ''),
+    clientSecret: optional('SN_CLIENT_SECRET', ''),
+    grantType: snGrantType as 'password' | 'client_credentials',
   },
 
   credentialProvider: rawProvider as CredentialProviderType,

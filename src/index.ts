@@ -12,9 +12,13 @@ import {
   EnvCredentialProvider,
   HeaderCredentialProvider,
 } from './auth/provider.js';
-import type { ServiceNowConfig } from './clients/servicenow.js';
 import { ServiceNowClient } from './clients/servicenow.js';
 import { config } from './config/config.js';
+import {
+  formatConfigError,
+  type ServiceNowConfig,
+  serviceNowConfigSchema,
+} from './config/sn-config.js';
 import { log } from './logger.js';
 import { sessionStore } from './session-store.js';
 import { registerBusinessRuleTools } from './tools/business-rule.js';
@@ -26,14 +30,32 @@ import { registerScriptIncludeTools } from './tools/script-include.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
 import { registerUpdateSetTools } from './tools/update-sets.js';
 
+function buildSnConfig(): ServiceNowConfig {
+  const result = serviceNowConfigSchema.safeParse({
+    authType: config.sn.authType,
+    grantType: config.sn.grantType,
+    instanceUrl: config.sn.instance,
+    clientId: config.sn.clientId,
+    clientSecret: config.sn.clientSecret,
+    username: config.sn.username,
+    password: config.sn.password,
+  });
+
+  if (!result.success) {
+    log(
+      'ERR',
+      `Invalid ServiceNow configuration: ${formatConfigError(result.error)}`,
+    );
+    process.exit(1);
+  }
+
+  return result.data;
+}
+
 function createCredentialProvider(): CredentialProvider {
   switch (config.credentialProvider) {
     case 'env':
-      return new EnvCredentialProvider({
-        instanceUrl: config.sn.instance,
-        username: config.sn.username,
-        password: config.sn.password,
-      });
+      return new EnvCredentialProvider(buildSnConfig());
     case 'header': {
       if (!config.gatewaySecret) {
         log(
@@ -264,15 +286,7 @@ async function startHttpServer(): Promise<void> {
 }
 
 async function startStdioServer(): Promise<void> {
-  if (!config.sn.instance || !config.sn.username || !config.sn.password) {
-    log('ERR', 'STDIO mode requires SN_INSTANCE, SN_USERNAME, SN_PASSWORD');
-    process.exit(1);
-  }
-  const server = buildServer({
-    instanceUrl: config.sn.instance,
-    username: config.sn.username,
-    password: config.sn.password,
-  });
+  const server = buildServer(buildSnConfig());
   const transport = new StdioServerTransport();
   await server.connect(transport);
   log('INFO', 'Running in stdio mode');

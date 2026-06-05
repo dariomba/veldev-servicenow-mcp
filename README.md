@@ -125,20 +125,73 @@ Or run from source (no build step needed):
 
 ## Configuration
 
+Copy `.env.example` to `.env` to configure.
+
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `SN_INSTANCE` | ✅ | — | Full URL e.g. `https://dev12345.service-now.com` |
+| `SN_AUTH_TYPE` | ❌ | `basic` | `basic` or `oauth` |
 | `SN_USERNAME` | ✅ | — | ServiceNow username |
 | `SN_PASSWORD` | ✅ | — | ServiceNow password |
+| `SN_CLIENT_ID` | ✅ | — | OAuth client ID from Application Registry |
+| `SN_CLIENT_SECRET` | ✅ | — | OAuth client secret |
+| `SN_GRANT_TYPE` | ❌ | `password` | `password` or `client_credentials` |
 | `PORT` | ❌ | `3000` | HTTP port |
 | `TRANSPORT` | ❌ | `http` | `http` or `stdio` |
 | `CREDENTIAL_PROVIDER` | ❌ | `env` | `env` (dev) or `header` (gateway mode) |
 | `GATEWAY_SECRET` | ❌ | — | Required when `CREDENTIAL_PROVIDER=header` |
 | `ALLOWED_ORIGIN` | ❌ | `*` in dev | CORS origin for HTTP transport |
 
-Copy `.env.example` to `.env` to configure.
+¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
+² Required when `SN_AUTH_TYPE=oauth`
 
 > **Free PDI:** Don't have a ServiceNow instance? Get a free Personal Developer Instance at [developer.servicenow.com](https://developer.servicenow.com).
+
+---
+
+## Authentication
+
+### Basic auth (default)
+
+```bash
+SN_INSTANCE=https://dev12345.service-now.com
+SN_USERNAME=admin
+SN_PASSWORD=your-password
+```
+
+### OAuth 2.0
+
+Supports **password** (ROPC) and **client_credentials** grant types. Tokens are requested automatically, cached in memory, and refreshed before expiry. A 401 response triggers a transparent token refresh and retry.
+
+**Password grant** — user context preserved, works on PDIs:
+
+```bash
+SN_INSTANCE=https://dev12345.service-now.com
+SN_AUTH_TYPE=oauth
+SN_GRANT_TYPE=password
+SN_CLIENT_ID=your-client-id
+SN_CLIENT_SECRET=your-client-secret
+SN_USERNAME=admin
+SN_PASSWORD=your-password
+```
+
+**Client credentials** — service-to-service, no user credentials needed:
+
+```bash
+SN_INSTANCE=https://dev12345.service-now.com
+SN_AUTH_TYPE=oauth
+SN_GRANT_TYPE=client_credentials
+SN_CLIENT_ID=your-client-id
+SN_CLIENT_SECRET=your-client-secret
+```
+
+**ServiceNow setup:**
+
+1. Navigate to **System OAuth → Application Registry**
+2. Click **New** → **Create an OAuth API endpoint for external clients**
+3. Set a name, note the generated **Client ID** and **Client Secret**
+4. Set **Accessible from** to `All application scopes`
+5. Add the values to your `.env`
 
 ---
 
@@ -235,7 +288,6 @@ For production self-hosting:
 ## Roadmap
 
 - **Multi-instance support** — named instances in config (`dev`, `staging`, `prod`), switchable per tool call or via a `switch_instance` tool
-- **OAuth 2.0 auth** — client credentials and auth-code flows for ServiceNow instances with SSO
 - **ITSM tools** — incident, change, problem read/write
 - **Generic table tools** — `query_table`, `get_record`, `create_record`, `update_record` for any table not covered by curated tools
 

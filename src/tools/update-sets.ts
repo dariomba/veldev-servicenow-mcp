@@ -30,6 +30,17 @@ export function registerUpdateSetTools(
       try {
         const username = client.getUsername();
 
+        if (!username) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: 'Cannot resolve the current Update Set: the connection is not tied to a named user (e.g. OAuth client_credentials grant). Use basic auth or an OAuth password grant for this tool.',
+              },
+            ],
+          };
+        }
+
         const prefs = await client.listRecords<RawUserPreference>(
           'sys_user_preference',
           `name=sys_update_set^user.user_name=${username}`,

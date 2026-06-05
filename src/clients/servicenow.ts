@@ -1,45 +1,28 @@
+import { type AuthStrategy, createAuthStrategy } from '../auth/strategy.js';
+import type { ServiceNowConfig } from '../config/sn-config.js';
 import { isSysId } from '../tools/helpers.js';
 import type { SnReference } from '../types/servicenow.js';
+import { fetchWithTimeout, SnApiError } from './http.js';
 
-export class SnApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly statusText: string,
-    public readonly body: string,
-    public readonly url: string,
-  ) {
-    super(`ServiceNow API error ${status} ${statusText} on ${url}`);
-    this.name = 'SnApiError';
-  }
-}
+export { SnApiError } from './http.js';
 
 interface SnTableResponse<T> {
   result: T;
 }
 
-export interface ServiceNowConfig {
-  instanceUrl: string;
-  username: string;
-  password: string;
-}
-
 export class ServiceNowClient {
   private readonly baseUrl: string;
-  private readonly authHeader: string;
-  private readonly _username: string;
+  private readonly auth: AuthStrategy;
   private cachedInstanceSettings?: { timezone: string };
 
   constructor(config: ServiceNowConfig) {
     // Normalise: strip trailing slash
     this.baseUrl = config.instanceUrl.replace(/\/$/, '');
-    this._username = config.username;
-    this.authHeader =
-      'Basic ' +
-      Buffer.from(`${config.username}:${config.password}`).toString('base64');
+    this.auth = createAuthStrategy(config, this.baseUrl);
   }
 
   getUsername(): string {
-    return this._username;
+    return this.auth.username();
   }
 
   private async request<T>(
@@ -49,6 +32,7 @@ export class ServiceNowClient {
       method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
       body?: unknown;
       timeoutMs?: number;
+      isRetry?: boolean;
     } = {},
   ): Promise<T> {
     const url = new URL(`${this.baseUrl}/api/now${path}`);
@@ -61,20 +45,35 @@ export class ServiceNowClient {
       url.searchParams.set(key, value);
     }
 
-    const { method = 'GET', body, timeoutMs = 30_000 } = options;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const {
+      method = 'GET',
+      body,
+      timeoutMs = 30_000,
+      isRetry = false,
+    } = options;
 
-    const response = await fetch(url.toString(), {
-      method,
-      signal: controller.signal,
-      headers: {
-        Authorization: this.authHeader,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      url.toString(),
+      {
+        method,
+        headers: {
+          Authorization: await this.auth.authHeader(),
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    }).finally(() => clearTimeout(timer));
+      timeoutMs,
+    );
+
+    if (response.status === 401 && !isRetry && this.auth.onUnauthorized()) {
+      return this.request<T>(path, params, {
+        method,
+        body,
+        timeoutMs,
+        isRetry: true,
+      });
+    }
 
     if (!response.ok) {
       const text = await response.text();
