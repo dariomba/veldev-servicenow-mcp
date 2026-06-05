@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-29 tools across 8 domains:
+33 tools across 10 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -23,6 +23,8 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Script includes** | Create reusable server-side script includes |
 | **Business rules** | Create business rules with before/after/async modes |
 | **Update sets** | List, switch, and export update sets |
+| **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
+| **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
 
 
 ---
@@ -209,6 +211,10 @@ Create a new catalog item called "VPN Access Request" with a text variable for b
 Create a business rule on incident that sets priority to 1 when impact and urgency are both 1
 
 Create a record producer called "New Hire Equipment" that generates an sc_req_item record, with a pre-insert script that maps the selected laptop model to the item field
+
+Create a fix script called "Backfill Incident SLAs" that queries all incidents missing an SLA and sets a default one
+
+Run the fix script with sys_id 18f9eee1c3d1479043e1fc0d0501315e
 ```
 
 ---
