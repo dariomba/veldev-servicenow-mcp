@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-33 tools across 10 domains:
+37 tools across 11 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -25,7 +25,6 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Update sets** | List, switch, and export update sets |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
-
 | **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 
 ---
@@ -296,7 +295,6 @@ For production self-hosting:
 
 - **Multi-instance support** — named instances in config (`dev`, `staging`, `prod`), switchable per tool call or via a `switch_instance` tool
 - **ITSM tools** — incident, change, problem read/write
-- **Generic table tools** — `query_table`, `get_record`, `create_record`, `update_record` for any table not covered by curated tools
 
 Contributions welcome — see [CLAUDE.md](CLAUDE.md) for the architecture guide.
 
