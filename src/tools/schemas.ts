@@ -972,7 +972,9 @@ const BusinessRuleBase = z.object({
         "Encoded query syntax, e.g. 'priority=1^active=true^category=hardware'. " +
         'Use this whenever the rule should only fire for records matching certain field values. ' +
         'NEVER use the condition field for field comparisons — put them here. ' +
-        'Use the servicenow-query-operators skill to look up the correct operator for each field type.',
+        "To fire only when a field changes, use the VALCHANGES operator: e.g. 'assignment_groupVALCHANGES'. " +
+        "To fire when a field changes to a specific value: 'assignment_groupCHANGESTO<sys_id>'. " +
+        "To fire when a field changes from a specific value: 'assignment_groupCHANGESFROM<sys_id>'.",
     ),
   role_conditions: z
     .string()
