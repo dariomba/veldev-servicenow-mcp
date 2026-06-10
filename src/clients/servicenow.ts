@@ -25,6 +25,10 @@ export class ServiceNowClient {
     return this.auth.username();
   }
 
+  getInstanceUrl(): string {
+    return this.baseUrl;
+  }
+
   private async request<T>(
     path: string,
     params: Record<string, string> = {},

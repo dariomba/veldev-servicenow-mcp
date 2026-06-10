@@ -21,6 +21,7 @@ import {
 } from './config/sn-config.js';
 import { log } from './logger.js';
 import { sessionStore } from './session-store.js';
+import { registerAtfTools } from './tools/atf.js';
 import { registerBackgroundScriptTools } from './tools/background-script.js';
 import { registerBusinessRuleTools } from './tools/business-rule.js';
 import { registerCatalogClientScriptTools } from './tools/catalog-client-script.js';
@@ -310,6 +311,7 @@ function buildServer(credentials: ServiceNowConfig): McpServer {
   registerBackgroundScriptTools(server, snClient);
   registerFixScriptTools(server, snClient);
   registerTableCrudTools(server, snClient);
+  registerAtfTools(server, snClient);
 
   return server;
 }
