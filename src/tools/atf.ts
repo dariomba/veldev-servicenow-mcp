@@ -802,6 +802,9 @@ export function registerAtfTools(
     },
     async ({ sys_id }) => {
       try {
+        if (!isSysId(sys_id))
+          return errText(`"${sys_id}" is not a valid test sys_id.`);
+
         const test = await client.getRecord<SnRecord>(TEST_TABLE, sys_id);
         const steps = await client.listRecords<SnRecord>(
           STEP_TABLE,
@@ -1338,6 +1341,17 @@ export function registerAtfTools(
         ]);
         const configSysId = val(step, 'step_config');
 
+        let defs: AtfInputDef[] = [];
+        let resolved: ResolvedInput[] = [];
+        if (inputs?.length) {
+          const [fetchedDefs, producers] = await Promise.all([
+            fetchInputDefs(client, configSysId),
+            fetchProducers(client, inputs),
+          ]);
+          defs = fetchedDefs;
+          resolved = resolveStepInputs(defs, inputs, producers);
+        }
+
         const body: Record<string, unknown> = {};
         if (order !== undefined) body.order = String(order);
         if (active !== undefined) body.active = String(active);
@@ -1351,12 +1365,7 @@ export function registerAtfTools(
 
         let inputStatus = 'Inputs:         none';
         let assertWarnings: string[] = [];
-        if (inputs?.length) {
-          const [defs, producers] = await Promise.all([
-            fetchInputDefs(client, configSysId),
-            fetchProducers(client, inputs),
-          ]);
-          const resolved = resolveStepInputs(defs, inputs, producers);
+        if (resolved.length) {
           // sys_variable_value rejects REST writes (ACL); write server-side via a
           // +1s trigger, then read back to confirm what actually landed.
           await client.executeBackgroundScriptTrigger(

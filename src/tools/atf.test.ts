@@ -559,6 +559,48 @@ describe('atf tools (in-memory MCP)', () => {
       expect(text).toContain('⚠ Assert input "assert_type" is empty');
       expect(text).toContain('record_successfully_inserted');
     });
+
+    it('does not patch order/active when an input is invalid', async () => {
+      const mockClient = buildMockClient();
+      const pair = await buildTestPair(registerAtfTools, mockClient);
+      try {
+        const result = await pair.mcpClient.callTool({
+          name: 'update_atf_step',
+          arguments: {
+            sys_id: NEW_STEP_SYS,
+            order: 250,
+            inputs: [{ element: 'nonexistent', value: 'x' }],
+          },
+        });
+        expect(result.isError).toBe(true);
+        expect(firstText(result)).toContain('Unknown input element');
+        expect(mockClient.patchRecord).not.toHaveBeenCalled();
+        expect(
+          mockClient.executeBackgroundScriptTrigger,
+        ).not.toHaveBeenCalled();
+      } finally {
+        await pair.teardown();
+      }
+    });
+  });
+
+  describe('get_atf_test', () => {
+    it('returns isError on a non-sys_id without querying', async () => {
+      const mockClient = buildMockClient();
+      const pair = await buildTestPair(registerAtfTools, mockClient);
+      try {
+        const result = await pair.mcpClient.callTool({
+          name: 'get_atf_test',
+          arguments: { sys_id: '0^ORDERBYname' },
+        });
+        expect(result.isError).toBe(true);
+        expect(firstText(result)).toContain('not a valid test sys_id');
+        expect(mockClient.getRecord).not.toHaveBeenCalled();
+        expect(mockClient.listRecords).not.toHaveBeenCalled();
+      } finally {
+        await pair.teardown();
+      }
+    });
   });
 
   describe('list_atf_tests', () => {
