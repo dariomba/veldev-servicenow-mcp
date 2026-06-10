@@ -1,15 +1,16 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { RawUpdateSet, RawUserPreference } from '../types/servicenow.js';
 import { handleError, resolveDisplay, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 
 export function registerUpdateSetTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'get_current_update_set',
     {
+      access: 'read',
       title: 'Get Current Update Set',
       description: [
         'Returns the name and application scope of the active Update Set for the authenticated user.',
@@ -22,7 +23,6 @@ export function registerUpdateSetTools(
       ].join('\n'),
       inputSchema: {},
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },

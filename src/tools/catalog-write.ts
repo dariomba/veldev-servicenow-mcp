@@ -1,8 +1,8 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import { type SnReference, VARIABLE_TYPE_MAP } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import {
   CatalogItemCreate,
   CatalogItemUpdate,
@@ -12,12 +12,13 @@ import {
 } from './schemas.js';
 
 export function registerCatalogWriteTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'create_catalog_item',
     {
+      access: 'write',
       title: 'Create Catalog Item',
       description: [
         'Creates a new ServiceNow catalog item (sc_cat_item record).',
@@ -29,7 +30,6 @@ export function registerCatalogWriteTools(
       ].join('\n'),
       inputSchema: CatalogItemCreate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: true,
@@ -130,9 +130,10 @@ export function registerCatalogWriteTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'associate_variable_set',
     {
+      access: 'write',
       title: 'Associate Variable Set to Catalog Item',
       description: [
         'Links an existing variable set (io_set) to a catalog item by creating an',
@@ -162,7 +163,6 @@ export function registerCatalogWriteTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -241,9 +241,10 @@ export function registerCatalogWriteTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'batch_create_catalog_variables',
     {
+      access: 'write',
       title: 'Batch Create Catalog Variables',
       description: [
         'Creates multiple variables (item_option_new records) on a catalog item in a single call.',
@@ -266,7 +267,6 @@ export function registerCatalogWriteTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -450,9 +450,10 @@ export function registerCatalogWriteTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_catalog_item',
     {
+      access: 'write',
       title: 'Update Catalog Item',
       description: [
         'Updates fields on an existing catalog item (sc_cat_item record).',
@@ -464,7 +465,6 @@ export function registerCatalogWriteTools(
       ].join('\n'),
       inputSchema: CatalogItemUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -566,9 +566,10 @@ export function registerCatalogWriteTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'batch_update_catalog_variables',
     {
+      access: 'write',
       title: 'Batch Update Catalog Variables',
       description: [
         'Updates fields on existing catalog item variables (item_option_new records).',
@@ -590,7 +591,6 @@ export function registerCatalogWriteTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -740,9 +740,10 @@ export function registerCatalogWriteTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'attach_user_criteria',
     {
+      access: 'write',
       title: 'Attach User Criteria to Catalog Item',
       description: [
         'Attaches a user criteria record to a catalog item to control who can see and order it.',
@@ -779,7 +780,6 @@ export function registerCatalogWriteTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: true,

@@ -1,16 +1,17 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 
 export function registerTableCrudTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'query_records',
     {
+      access: 'read',
       title: 'Query Records',
       description: [
         'Query any ServiceNow table using an encoded query string.',
@@ -61,7 +62,6 @@ export function registerTableCrudTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -89,9 +89,10 @@ export function registerTableCrudTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'get_record',
     {
+      access: 'read',
       title: 'Get Record',
       description: [
         'Fetch a single ServiceNow record by sys_id from any table.',
@@ -117,7 +118,6 @@ export function registerTableCrudTools(
           .describe('Fields to return. Leave empty to return all fields.'),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -143,9 +143,10 @@ export function registerTableCrudTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'create_record',
     {
+      access: 'write',
       title: 'Create Record',
       description: [
         'Create a new record in any ServiceNow table.',
@@ -192,9 +193,10 @@ export function registerTableCrudTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_record',
     {
+      access: 'write',
       title: 'Update Record',
       description: [
         'Update an existing ServiceNow record by sys_id.',

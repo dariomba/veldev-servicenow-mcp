@@ -1,8 +1,8 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import {
   UiPolicyActionCreate,
   UiPolicyActionUpdate,
@@ -11,12 +11,13 @@ import {
 } from './schemas.js';
 
 export function registerUiPolicyTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'batch_create_ui_policies',
     {
+      access: 'write',
       title: 'Batch Create UI Policies',
       description: [
         'Creates multiple catalog_ui_policy records in a single call.',
@@ -38,7 +39,6 @@ export function registerUiPolicyTools(
           .describe('Array of UI policy definitions to create.'),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: true,
@@ -127,9 +127,10 @@ export function registerUiPolicyTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'batch_create_ui_policy_actions',
     {
+      access: 'write',
       title: 'Batch Create UI Policy Actions',
       description: [
         'Creates multiple catalog_ui_policy_action records in a single call.',
@@ -150,7 +151,6 @@ export function registerUiPolicyTools(
           .describe('Array of UI policy action definitions to create.'),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -342,9 +342,10 @@ for (var i = 0; i < links.length; i++) {
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_ui_policy',
     {
+      access: 'write',
       title: 'Update UI Policy',
       description: [
         'Updates fields on an existing catalog_ui_policy record.',
@@ -356,7 +357,6 @@ for (var i = 0; i < links.length; i++) {
       ].join('\n'),
       inputSchema: UiPolicyUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -431,9 +431,10 @@ for (var i = 0; i < links.length; i++) {
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_ui_policy_action',
     {
+      access: 'write',
       title: 'Update UI Policy Action',
       description: [
         'Updates fields on an existing catalog_ui_policy_action record.',
@@ -446,7 +447,6 @@ for (var i = 0; i < links.length; i++) {
       ].join('\n'),
       inputSchema: UiPolicyActionUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,

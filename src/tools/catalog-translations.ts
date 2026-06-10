@@ -1,8 +1,8 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { type ServiceNowClient, SnApiError } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 
 export const TRANSLATION_CONFIG = {
   enabled: false,
@@ -151,12 +151,13 @@ async function upsertTranslation(
 }
 
 export function registerCatalogTranslationTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'translate_catalog_item',
     {
+      access: 'write',
       title: 'Translate Catalog Item',
       description: [
         'Writes pre-translated text for a catalog item and its variables to ServiceNow.',
@@ -198,7 +199,6 @@ export function registerCatalogTranslationTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: true,

@@ -1,4 +1,3 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import {
@@ -25,6 +24,7 @@ import {
   resolveDisplay,
   resolveValue,
 } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 
 function normaliseVariable(raw: RawVariable): CatalogVariable {
   // raw.type is { value: "8", display_value: "Reference" } with sysparm_display_value=all;
@@ -379,12 +379,13 @@ function buildSummary(def: CatalogItemDefinition): string {
 }
 
 export function registerCatalogReadTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'get_catalog_item_definition',
     {
+      access: 'read',
       title: 'Get Catalog Item Definition',
       description: [
         'Fetches the full definition of a ServiceNow catalog item including:',
@@ -407,7 +408,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -424,9 +424,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_catalog_items',
     {
+      access: 'read',
       title: 'List Catalog Items',
       description: [
         'Search for catalog items on the ServiceNow instance.',
@@ -463,7 +464,6 @@ export function registerCatalogReadTools(
           .describe('Max results (1-100). Defaults to 20.'),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -551,9 +551,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_catalog_categories',
     {
+      access: 'read',
       title: 'List Catalog Categories',
       description: [
         'Search for ServiceNow catalog categories and return their sys_ids and names.',
@@ -573,7 +574,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -635,9 +635,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_catalogs',
     {
+      access: 'read',
       title: 'List Service Catalogs',
       description: [
         'Search for ServiceNow service catalogs and return their sys_ids and titles.',
@@ -657,7 +658,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -709,9 +709,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_flows',
     {
+      access: 'read',
       title: 'List Flow Designer Flows',
       description: [
         'Search for ServiceNow Flow Designer flows and return their sys_ids and names.',
@@ -731,7 +732,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -783,9 +783,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_workflows',
     {
+      access: 'read',
       title: 'List Classic Workflows',
       description: [
         'Search for ServiceNow classic Workflows and return their sys_ids and names.',
@@ -807,7 +808,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -859,9 +859,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'resolve_table',
     {
+      access: 'read',
       title: 'Resolve Table sys_id',
       description: [
         'Looks up a ServiceNow table and returns its internal name and label.',
@@ -886,7 +887,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -960,9 +960,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'list_variable_set_variables',
     {
+      access: 'read',
       title: 'List Variable Set Variables',
       description: [
         'Searches item_option_new records across the WHOLE platform that belong',
@@ -990,7 +991,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -1091,9 +1091,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'find_user_criteria',
     {
+      access: 'read',
       title: 'Find User Criteria',
       description: [
         'Searches the user_criteria table for existing records that can be attached to a catalog item.',
@@ -1124,7 +1125,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
@@ -1258,9 +1258,10 @@ export function registerCatalogReadTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'find_reusable_variables',
     {
+      access: 'read',
       title: 'Find Reusable Variables',
       description: [
         'Call ONCE with ALL planned variables after create_catalog_item.',
@@ -1301,7 +1302,6 @@ export function registerCatalogReadTools(
           ),
       },
       annotations: {
-        readOnlyHint: true,
         openWorldHint: true,
       },
     },
