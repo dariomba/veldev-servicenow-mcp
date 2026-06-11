@@ -66,6 +66,8 @@ No hook enforces this — it is entirely your responsibility. Skipping step 1 me
 | `TRANSPORT` | ❌ | `http` (default) or `stdio` |
 | `CREDENTIAL_PROVIDER` | ❌ | `env` (dev default) or `header` (gateway mode) |
 | `GATEWAY_SECRET` | ❌ | Required when `CREDENTIAL_PROVIDER=header` |
+| `ACCESS_ENFORCEMENT` | ❌ | `on` or `off` (default). Gateway mode only: write tools require the access header per request (default-deny). Env/stdio always behaves as write. |
+| `ACCESS_HEADER` | ❌ | Header carrying per-request access (default `x-mcp-access`) |
 
 ¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
 ² Required when `SN_AUTH_TYPE=oauth`

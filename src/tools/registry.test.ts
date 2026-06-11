@@ -1,8 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import type {
+  McpServer,
+  RegisteredTool,
+} from '@modelcontextprotocol/sdk/server/mcp.js';
+import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import { buildServer } from '../server.js';
 import { buildTestPair, firstText } from '../tests/helpers.js';
+import {
+  deriveEnforcement,
+  type ToolAccess,
+  ToolRegistry,
+  type ToolRegistryOptions,
+} from './registry.js';
 
 describe('tool access classification', () => {
   it('classifies every registered tool as read or write', () => {
@@ -119,5 +131,217 @@ describe('ToolRegistry', () => {
     expect(firstText(result)).toBe('hello');
 
     await teardown();
+  });
+});
+
+describe('deriveEnforcement', () => {
+  it('maps credential mode + flag to the enforcement mode', () => {
+    expect(deriveEnforcement('header', 'on')).toBe('enforce');
+    expect(deriveEnforcement('header', 'off')).toBe('observe');
+    expect(deriveEnforcement('env', 'on')).toBe('off');
+    expect(deriveEnforcement('env', 'off')).toBe('off');
+  });
+});
+
+describe('per-request access enforcement', () => {
+  const okResult = { content: [{ type: 'text' as const, text: 'ok' }] };
+
+  /**
+   * Registers a single tool through a stub McpServer that captures the
+   * wrapped handler, so tests can invoke it with a fabricated `extra` arg.
+   */
+  function captureWrapped(options: ToolRegistryOptions, access: ToolAccess) {
+    let wrapped: (...args: unknown[]) => unknown = () => {
+      throw new Error('tool was never registered');
+    };
+    const server = {
+      registerTool: (
+        _name: string,
+        _config: unknown,
+        cb: (...args: unknown[]) => unknown,
+      ) => {
+        wrapped = cb;
+        return {} as RegisteredTool;
+      },
+    } as unknown as McpServer;
+
+    const underlying = vi.fn(async () => okResult);
+    new ToolRegistry(server, options).registerTool(
+      'probe',
+      { access },
+      underlying,
+    );
+    return { call: (extra?: unknown) => wrapped(extra), underlying };
+  }
+
+  const grantedExtra = {
+    sessionId: 'sess-1',
+    requestInfo: { headers: { 'x-mcp-access': 'write' } },
+  };
+
+  it('enforcement off: write tool executes regardless of header', async () => {
+    for (const extra of [
+      grantedExtra,
+      { sessionId: 'sess-1', requestInfo: { headers: {} } },
+      { sessionId: 'sess-1' },
+      undefined,
+    ]) {
+      const { call, underlying } = captureWrapped(
+        { enforcement: 'off' },
+        'write',
+      );
+      expect(await call(extra)).toEqual(okResult);
+      expect(underlying).toHaveBeenCalledOnce();
+    }
+  });
+
+  it('enforce: header "write" grants the call', async () => {
+    const { call, underlying } = captureWrapped(
+      { enforcement: 'enforce' },
+      'write',
+    );
+    expect(await call(grantedExtra)).toEqual(okResult);
+    expect(underlying).toHaveBeenCalledOnce();
+  });
+
+  it('enforce: default-deny for missing header, "read", junk, multi-value, missing requestInfo, missing extra', async () => {
+    const deniedExtras: unknown[] = [
+      { sessionId: 'sess-1', requestInfo: { headers: {} } },
+      {
+        sessionId: 'sess-1',
+        requestInfo: { headers: { 'x-mcp-access': 'read' } },
+      },
+      {
+        sessionId: 'sess-1',
+        requestInfo: { headers: { 'x-mcp-access': 'admin; write' } },
+      },
+      {
+        sessionId: 'sess-1',
+        requestInfo: { headers: { 'x-mcp-access': ['write', 'write'] } },
+      },
+      { sessionId: 'sess-1' }, // no requestInfo
+      undefined, // no extra at all
+    ];
+
+    for (const extra of deniedExtras) {
+      const { call, underlying } = captureWrapped(
+        { enforcement: 'enforce' },
+        'write',
+      );
+      const result = (await call(extra)) as {
+        isError?: boolean;
+        content: Array<{ text: string }>;
+      };
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('requires write access');
+      expect(underlying).not.toHaveBeenCalled();
+    }
+  });
+
+  it('enforce: read tools are never gated', async () => {
+    const { call, underlying } = captureWrapped(
+      { enforcement: 'enforce' },
+      'read',
+    );
+    expect(await call({ sessionId: 'sess-1' })).toEqual(okResult);
+    expect(underlying).toHaveBeenCalledOnce();
+  });
+
+  it('observe: write tool executes without the header (pre-flip logging mode)', async () => {
+    const { call, underlying } = captureWrapped(
+      { enforcement: 'observe' },
+      'write',
+    );
+    expect(await call({ sessionId: 'sess-1' })).toEqual(okResult);
+    expect(underlying).toHaveBeenCalledOnce();
+  });
+
+  it('env mode derives "off" and writes work', async () => {
+    const { call, underlying } = captureWrapped(
+      { enforcement: deriveEnforcement('env', 'on') },
+      'write',
+    );
+    expect(await call({ sessionId: 'sess-1' })).toEqual(okResult);
+    expect(underlying).toHaveBeenCalledOnce();
+  });
+
+  it('respects a custom access header name', async () => {
+    const { call, underlying } = captureWrapped(
+      { enforcement: 'enforce', accessHeader: 'x-custom-access' },
+      'write',
+    );
+    expect(
+      await call({ requestInfo: { headers: { 'x-custom-access': 'write' } } }),
+    ).toEqual(okResult);
+    expect(underlying).toHaveBeenCalledOnce();
+  });
+});
+
+describe('enforcement wiring through buildServer', () => {
+  async function connect(server: McpServer) {
+    const [serverTransport, clientTransport] =
+      InMemoryTransport.createLinkedPair();
+    const mcpClient = new Client({ name: 'test-client', version: '1.0.0' });
+    await server.connect(serverTransport);
+    await mcpClient.connect(clientTransport);
+    return mcpClient;
+  }
+
+  it('enforce mode denies a write tool call before the client is touched', async () => {
+    // The in-memory transport carries no requestInfo — exactly the
+    // default-deny path a gateway request without the header hits.
+    const createRecord = vi.fn();
+    const { server } = buildServer(
+      { createRecord } as unknown as ServiceNowClient,
+      { enforcement: 'enforce' },
+    );
+    const mcpClient = await connect(server);
+
+    const result = await mcpClient.callTool({
+      name: 'create_record',
+      arguments: { table: 'incident', data: { short_description: 'x' } },
+    });
+
+    expect(result.isError).toBe(true);
+    expect(firstText(result)).toContain('requires write access');
+    expect(createRecord).not.toHaveBeenCalled();
+    await mcpClient.close();
+  });
+
+  it('enforce mode leaves read tools callable', async () => {
+    const listRecords = vi.fn(async () => []);
+    const { server } = buildServer(
+      { listRecords } as unknown as ServiceNowClient,
+      { enforcement: 'enforce' },
+    );
+    const mcpClient = await connect(server);
+
+    const result = await mcpClient.callTool({
+      name: 'query_records',
+      arguments: { table: 'incident' },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(listRecords).toHaveBeenCalledOnce();
+    await mcpClient.close();
+  });
+
+  it('enforcement off keeps write tools working end-to-end', async () => {
+    const createRecord = vi.fn(async () => ({ sys_id: { value: 'abc123' } }));
+    const { server } = buildServer(
+      { createRecord } as unknown as ServiceNowClient,
+      { enforcement: 'off' },
+    );
+    const mcpClient = await connect(server);
+
+    const result = await mcpClient.callTool({
+      name: 'create_record',
+      arguments: { table: 'incident', data: { short_description: 'x' } },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(firstText(result)).toContain('abc123');
+    expect(createRecord).toHaveBeenCalledOnce();
+    await mcpClient.close();
   });
 });

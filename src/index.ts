@@ -21,6 +21,10 @@ import {
 import { log } from './logger.js';
 import { buildServer } from './server.js';
 import { sessionStore } from './session-store.js';
+import {
+  deriveEnforcement,
+  type ToolRegistryOptions,
+} from './tools/registry.js';
 
 function buildSnConfig(): ServiceNowConfig {
   const result = serviceNowConfigSchema.safeParse({
@@ -63,6 +67,14 @@ function createCredentialProvider(): CredentialProvider {
 
 const credentialProvider = createCredentialProvider();
 const DEV_MODE = config.credentialProvider === 'env';
+
+const registryOptions: ToolRegistryOptions = {
+  enforcement: deriveEnforcement(
+    config.credentialProvider,
+    config.accessEnforcement,
+  ),
+  accessHeader: config.accessHeader,
+};
 
 async function resolveCredentials(
   req: IncomingMessage,
@@ -169,7 +181,10 @@ async function handleMcpRequest(
     },
   });
 
-  const { server } = buildServer(new ServiceNowClient(credentials));
+  const { server } = buildServer(
+    new ServiceNowClient(credentials),
+    registryOptions,
+  );
 
   transport.onclose = () => {
     if (resolvedSessionId) {
@@ -251,6 +266,10 @@ async function startHttpServer(): Promise<void> {
     log('INFO', `HTTP server listening on port ${config.port}`);
     log('INFO', `MCP endpoint: http://localhost:${config.port}/mcp`);
     log('INFO', `Health check: http://localhost:${config.port}/health`);
+    log('INFO', 'Access enforcement mode resolved', {
+      mode: registryOptions.enforcement,
+      accessHeader: registryOptions.accessHeader,
+    });
     if (DEV_MODE) {
       log('INFO', 'DEV MODE active — JWT auth disabled');
       log('INFO', `Instance: ${config.sn.instance}`);
@@ -278,7 +297,10 @@ async function startHttpServer(): Promise<void> {
 }
 
 async function startStdioServer(): Promise<void> {
-  const { server } = buildServer(new ServiceNowClient(buildSnConfig()));
+  // Stdio has no per-request headers — always behaves as write.
+  const { server } = buildServer(new ServiceNowClient(buildSnConfig()), {
+    enforcement: 'off',
+  });
   const transport = new StdioServerTransport();
   await server.connect(transport);
   log('INFO', 'Running in stdio mode');
