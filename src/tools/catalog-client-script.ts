@@ -1,8 +1,8 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import {
   CatalogClientScriptCreate,
   CatalogClientScriptUpdate,
@@ -15,12 +15,13 @@ const UI_TYPE_MAP: Record<string, string> = {
 };
 
 export function registerCatalogClientScriptTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'batch_create_catalog_client_scripts',
     {
+      access: 'write',
       title: 'Batch Create Catalog Client Scripts',
       description: [
         'Creates multiple catalog_script_client records in a single call.',
@@ -51,7 +52,6 @@ export function registerCatalogClientScriptTools(
           ),
       },
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -200,9 +200,10 @@ for (var i = 0; i < links.length; i++) {
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_catalog_client_script',
     {
+      access: 'write',
       title: 'Update Catalog Client Script',
       description: [
         'Updates fields on an existing catalog_script_client record.',
@@ -212,7 +213,6 @@ for (var i = 0; i < links.length; i++) {
       ].join('\n'),
       inputSchema: CatalogClientScriptUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,

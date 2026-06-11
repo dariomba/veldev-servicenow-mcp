@@ -1,15 +1,16 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import { handleError } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import { BackgroundScriptExecute } from './schemas.js';
 
 export function registerBackgroundScriptTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'execute_background_script',
     {
+      access: 'write',
       title: 'Execute Background Script',
       description: [
         'Schedules a server-side JavaScript snippet to run as a background script',
@@ -23,7 +24,6 @@ export function registerBackgroundScriptTools(
       ].join('\n'),
       inputSchema: BackgroundScriptExecute,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
         openWorldHint: true,

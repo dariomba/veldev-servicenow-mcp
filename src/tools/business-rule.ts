@@ -1,16 +1,17 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import { BusinessRuleCreate, BusinessRuleUpdate } from './schemas.js';
 
 export function registerBusinessRuleTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'create_business_rule',
     {
+      access: 'write',
       title: 'Create Business Rule',
       description: [
         'Creates a sys_script record (business rule) on a ServiceNow table.',
@@ -30,7 +31,6 @@ export function registerBusinessRuleTools(
       ].join('\n'),
       inputSchema: BusinessRuleCreate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -136,9 +136,10 @@ export function registerBusinessRuleTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_business_rule',
     {
+      access: 'write',
       title: 'Update Business Rule',
       description: [
         'Updates fields on an existing sys_script record.',
@@ -148,7 +149,6 @@ export function registerBusinessRuleTools(
       ].join('\n'),
       inputSchema: BusinessRuleUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,

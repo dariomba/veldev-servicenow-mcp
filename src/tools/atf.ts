@@ -1,4 +1,3 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import {
@@ -7,6 +6,7 @@ import {
   resolveDisplay,
   resolveValue,
 } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import {
   AtfAddStep,
   AtfAddTestToSuite,
@@ -415,7 +415,7 @@ function resolveStepInputs(
  * Builds a global background script that upserts each input value into
  * sys_variable_value. Step input values CANNOT be written over the Table API —
  * that table's ACLs reject REST insert/update with HTTP 403 — so they must be
- * written server-side, where GlideRecord bypasses those ACLs. Inserting the
+ * written registry-side, where GlideRecord bypasses those ACLs. Inserting the
  * step already auto-creates the (empty) value rows, so we find-or-update by
  * (document_key, variable) to avoid duplicates.
  */
@@ -592,26 +592,27 @@ function formatInputStatus(
   }
   return [
     `Inputs:      ${applied.length ? `${applied.join(', ')} confirmed; ` : ''}NOT confirmed: ${pending.join(', ')}.`,
-    '             The server-side write may still be settling or was rejected —',
+    '             The registry-side write may still be settling or was rejected —',
     '             re-read with get_atf_test, or retry update_atf_step.',
   ].join('\n');
 }
 
 export function registerAtfTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
   // ── Read: list step configs ──────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'list_atf_step_configs',
     {
+      access: 'read',
       title: 'List ATF Step Configs',
       description: [
         'Lists ServiceNow ATF step config types (sys_atf_step_config) — the building',
         'blocks available when adding steps to a test (e.g. "Record Insert",',
-        '"Open a New Form", "Run Server Side Script").',
+        '"Open a New Form", "Run registry Side Script").',
         '',
-        'Filter by category (Server, Form, REST, Service Catalog, …) or by a name',
+        'Filter by category (registry, Form, REST, Service Catalog, …) or by a name',
         'substring. Returns name, sys_id, category and batch-order constraint.',
         '',
         "Call get_atf_step_config_schema next to see a config's inputs and outputs.",
@@ -663,9 +664,10 @@ export function registerAtfTools(
   );
 
   // ── Read: step config schema (inputs + outputs) ───────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'get_atf_step_config_schema',
     {
+      access: 'read',
       title: 'Get ATF Step Config Schema',
       description: [
         'Returns the input and output variables of an ATF step config.',
@@ -734,9 +736,10 @@ export function registerAtfTools(
   );
 
   // ── Read: list/search tests ───────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'list_atf_tests',
     {
+      access: 'read',
       title: 'List ATF Tests',
       description: [
         'Lists/searches ATF tests (sys_atf_test), most recently updated first.',
@@ -789,9 +792,10 @@ export function registerAtfTools(
   );
 
   // ── Read: full test with steps ────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'get_atf_test',
     {
+      access: 'read',
       title: 'Get ATF Test',
       description: [
         "Reads an ATF test (sys_atf_test) with its ordered steps and each step's",
@@ -876,9 +880,10 @@ export function registerAtfTools(
   );
 
   // ── Write: create test suite ──────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'create_atf_test_suite',
     {
+      access: 'write',
       title: 'Create ATF Test Suite',
       description: [
         'Creates an ATF test suite (sys_atf_test_suite). A suite groups tests so they',
@@ -923,9 +928,10 @@ export function registerAtfTools(
   );
 
   // ── Write: update test suite (incl. soft-delete via active=false) ──────────
-  server.registerTool(
+  registry.registerTool(
     'update_atf_test_suite',
     {
+      access: 'write',
       title: 'Update ATF Test Suite',
       description: [
         'Updates an ATF test suite (sys_atf_test_suite). Pass only fields to change.',
@@ -969,13 +975,14 @@ export function registerAtfTools(
   );
 
   // ── Write: create test ────────────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'create_atf_test',
     {
+      access: 'write',
       title: 'Create ATF Test',
       description: [
         'Creates an ATF test (sys_atf_test). Add steps with add_atf_step (in execution',
-        'order). To run it, open the returned URL in ServiceNow — this server does not',
+        'order). To run it, open the returned URL in ServiceNow — this registry does not',
         'execute tests.',
         '',
         'Returns the test sys_id and URL.',
@@ -1021,9 +1028,10 @@ export function registerAtfTools(
   );
 
   // ── Write: update test (incl. soft-delete via active=false) ────────────────
-  server.registerTool(
+  registry.registerTool(
     'update_atf_test',
     {
+      access: 'write',
       title: 'Update ATF Test',
       description: [
         'Updates an ATF test (sys_atf_test). Pass only fields to change.',
@@ -1077,9 +1085,10 @@ export function registerAtfTools(
   );
 
   // ── Write: add test to suite ──────────────────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'add_atf_test_to_suite',
     {
+      access: 'write',
       title: 'Add ATF Test to Suite',
       description: [
         'Adds a test to a test suite (creates a sys_atf_test_suite_test link with an',
@@ -1131,14 +1140,15 @@ export function registerAtfTools(
   );
 
   // ── Write: add a configured step to a test ─────────────────────────────────
-  server.registerTool(
+  registry.registerTool(
     'add_atf_step',
     {
+      access: 'write',
       title: 'Add ATF Step',
       description: [
         'Adds a step to an ATF test (sys_atf_step) and configures its inputs in one',
         'call. The step is created immediately (its sys_id is returned now); input',
-        'values are written by a server-side script and appear within a few seconds',
+        'values are written by a registry-side script and appear within a few seconds',
         '(ServiceNow ACLs block writing them directly over the API).',
         '',
         'IMPORTANT — you MUST call get_atf_step_config_schema before this tool.',
@@ -1164,7 +1174,7 @@ export function registerAtfTools(
         'assert-type input remains empty, because such a step asserts nothing.',
         '',
         'Coverage patterns: after a submit/insert step, consume its outputs (e.g.',
-        'record_id) in a later server-side validation step. When verifying a',
+        'record_id) in a later registry-side validation step. When verifying a',
         'conditional UI state (e.g. a catalog UI policy), first assert the INITIAL',
         'state with a state-validation step ordered BEFORE the step that triggers the',
         'change — otherwise the test passes even if the state was always on.',
@@ -1199,7 +1209,7 @@ export function registerAtfTools(
         // renders, so a manual save persists them; API-created steps must write
         // them too or end up configured differently from UI-created ones (e.g.
         // Record Insert's assert_type silently empty → the step asserts nothing).
-        // javascript: defaults are evaluated server-side at render time and
+        // javascript: defaults are evaluated registry-side at render time and
         // can't be replayed here.
         const provided = new Set(resolved.map((r) => r.element));
         const defaulted = defs.filter(
@@ -1237,7 +1247,7 @@ export function registerAtfTools(
         const created = await client.createRecord<SnRecord>(STEP_TABLE, body);
         const stepSysId = val(created, 'sys_id');
 
-        // sys_variable_value rejects REST writes (ACL); write inputs server-side
+        // sys_variable_value rejects REST writes (ACL); write inputs registry-side
         // via a +1s trigger, then read them back so we report what actually
         // landed instead of optimistically assuming success.
         let inputStatus = 'Inputs:      none';
@@ -1267,7 +1277,7 @@ export function registerAtfTools(
           ? [
               `Outputs:     ${outputs.map((o) => `${o.element} [${o.internalType}]`).join(', ')}`,
               `             Consume them in later steps via map_from_step=${stepSysId} + map_output`,
-              '             (e.g. a server-side record validation after a submit/insert).',
+              '             (e.g. a registry-side record validation after a submit/insert).',
             ]
           : ['Outputs:     none'];
 
@@ -1313,9 +1323,10 @@ export function registerAtfTools(
   );
 
   // ── Write: update a step (reorder / activate / change inputs) ──────────────
-  server.registerTool(
+  registry.registerTool(
     'update_atf_step',
     {
+      access: 'write',
       title: 'Update ATF Step',
       description: [
         'Updates an existing ATF step (sys_atf_step): reorder, activate/deactivate, or',
@@ -1366,7 +1377,7 @@ export function registerAtfTools(
         let inputStatus = 'Inputs:         none';
         let assertWarnings: string[] = [];
         if (resolved.length) {
-          // sys_variable_value rejects REST writes (ACL); write server-side via a
+          // sys_variable_value rejects REST writes (ACL); write registry-side via a
           // +1s trigger, then read back to confirm what actually landed.
           await client.executeBackgroundScriptTrigger(
             buildInputUpsertScript(sys_id, resolved, configSysId),

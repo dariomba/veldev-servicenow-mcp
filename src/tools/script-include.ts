@@ -1,16 +1,17 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import { ScriptIncludeCreate, ScriptIncludeUpdate } from './schemas.js';
 
 export function registerScriptIncludeTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'create_script_include',
     {
+      access: 'write',
       title: 'Create Script Include',
       description: [
         'Creates a sys_script_include record in ServiceNow.',
@@ -32,7 +33,6 @@ export function registerScriptIncludeTools(
       ].join('\n'),
       inputSchema: ScriptIncludeCreate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,
@@ -101,9 +101,10 @@ export function registerScriptIncludeTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_script_include',
     {
+      access: 'write',
       title: 'Update Script Include',
       description: [
         'Updates fields on an existing sys_script_include record.',
@@ -113,7 +114,6 @@ export function registerScriptIncludeTools(
       ].join('\n'),
       inputSchema: ScriptIncludeUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,

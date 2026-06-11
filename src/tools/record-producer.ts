@@ -1,16 +1,17 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
 import type { SnReference } from '../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from './helpers.js';
+import type { ToolRegistry } from './registry.js';
 import { RecordProducerCreate, RecordProducerUpdate } from './schemas.js';
 
 export function registerRecordProducerTools(
-  server: McpServer,
+  registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  server.registerTool(
+  registry.registerTool(
     'create_record_producer',
     {
+      access: 'write',
       title: 'Create Record Producer',
       description: [
         'Creates a new ServiceNow Record Producer (sc_cat_item_producer record).',
@@ -27,7 +28,6 @@ export function registerRecordProducerTools(
       ].join('\n'),
       inputSchema: RecordProducerCreate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: false,
         openWorldHint: true,
@@ -146,9 +146,10 @@ export function registerRecordProducerTools(
     },
   );
 
-  server.registerTool(
+  registry.registerTool(
     'update_record_producer',
     {
+      access: 'write',
       title: 'Update Record Producer',
       description: [
         'Updates fields on an existing Record Producer (sc_cat_item_producer record).',
@@ -161,7 +162,6 @@ export function registerRecordProducerTools(
       ].join('\n'),
       inputSchema: RecordProducerUpdate,
       annotations: {
-        readOnlyHint: false,
         destructiveHint: false,
         idempotentHint: true,
         openWorldHint: true,

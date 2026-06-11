@@ -4,7 +4,6 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from 'node:http';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
@@ -20,19 +19,8 @@ import {
   serviceNowConfigSchema,
 } from './config/sn-config.js';
 import { log } from './logger.js';
+import { buildServer } from './server.js';
 import { sessionStore } from './session-store.js';
-import { registerAtfTools } from './tools/atf.js';
-import { registerBackgroundScriptTools } from './tools/background-script.js';
-import { registerBusinessRuleTools } from './tools/business-rule.js';
-import { registerCatalogClientScriptTools } from './tools/catalog-client-script.js';
-import { registerCatalogReadTools } from './tools/catalog-read.js';
-import { registerCatalogWriteTools } from './tools/catalog-write.js';
-import { registerFixScriptTools } from './tools/fix-script.js';
-import { registerRecordProducerTools } from './tools/record-producer.js';
-import { registerScriptIncludeTools } from './tools/script-include.js';
-import { registerTableCrudTools } from './tools/table-crud.js';
-import { registerUiPolicyTools } from './tools/ui-policy-write.js';
-import { registerUpdateSetTools } from './tools/update-sets.js';
 
 function buildSnConfig(): ServiceNowConfig {
   const result = serviceNowConfigSchema.safeParse({
@@ -181,7 +169,7 @@ async function handleMcpRequest(
     },
   });
 
-  const server = buildServer(credentials);
+  const { server } = buildServer(new ServiceNowClient(credentials));
 
   transport.onclose = () => {
     if (resolvedSessionId) {
@@ -290,30 +278,10 @@ async function startHttpServer(): Promise<void> {
 }
 
 async function startStdioServer(): Promise<void> {
-  const server = buildServer(buildSnConfig());
+  const { server } = buildServer(new ServiceNowClient(buildSnConfig()));
   const transport = new StdioServerTransport();
   await server.connect(transport);
   log('INFO', 'Running in stdio mode');
-}
-
-function buildServer(credentials: ServiceNowConfig): McpServer {
-  const snClient = new ServiceNowClient(credentials);
-  const server = new McpServer({ name: 'servicenow-mcp', version: '0.1.0' });
-
-  registerCatalogReadTools(server, snClient);
-  registerCatalogWriteTools(server, snClient);
-  registerRecordProducerTools(server, snClient);
-  registerUiPolicyTools(server, snClient);
-  registerCatalogClientScriptTools(server, snClient);
-  registerScriptIncludeTools(server, snClient);
-  registerBusinessRuleTools(server, snClient);
-  registerUpdateSetTools(server, snClient);
-  registerBackgroundScriptTools(server, snClient);
-  registerFixScriptTools(server, snClient);
-  registerTableCrudTools(server, snClient);
-  registerAtfTools(server, snClient);
-
-  return server;
 }
 
 async function main(): Promise<void> {
