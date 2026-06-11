@@ -2,16 +2,17 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from '../clients/servicenow.js';
-import { ToolRegistry } from '../tools/registry.js';
+import { ToolRegistry, type ToolRegistryOptions } from '../tools/registry.js';
 
 export async function buildTestPair(
   registerFn: (registry: ToolRegistry, client: ServiceNowClient) => void,
   mockClient: ServiceNowClient,
+  registryOptions?: ToolRegistryOptions,
 ): Promise<{ mcpClient: Client; teardown: () => Promise<void> }> {
   const [serverTransport, clientTransport] =
     InMemoryTransport.createLinkedPair();
   const server = new McpServer({ name: 'test-sn', version: '0.0.0' });
-  registerFn(new ToolRegistry(server), mockClient);
+  registerFn(new ToolRegistry(server, registryOptions), mockClient);
   const mcpClient = new Client({ name: 'test-client', version: '1.0.0' });
   await server.connect(serverTransport);
   await mcpClient.connect(clientTransport);

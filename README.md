@@ -144,6 +144,8 @@ Copy `.env.example` to `.env` to configure.
 | `CREDENTIAL_PROVIDER` | ❌ | `env` | `env` (dev) or `header` (gateway mode) |
 | `GATEWAY_SECRET` | ❌ | — | Required when `CREDENTIAL_PROVIDER=header` |
 | `ALLOWED_ORIGIN` | ❌ | `*` in dev | CORS origin for HTTP transport |
+| `ACCESS_ENFORCEMENT` | ❌ | `off` | `on` or `off`. Gateway mode only: when `on`, write tools require the access header with value `write` on each request (default-deny). Env/stdio servers always behave as write. |
+| `ACCESS_HEADER` | ❌ | `x-mcp-access` | Header carrying the per-request access value (`write` grants write; anything else is read) |
 
 ¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
 ² Required when `SN_AUTH_TYPE=oauth`

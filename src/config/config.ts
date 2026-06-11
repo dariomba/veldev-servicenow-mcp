@@ -47,6 +47,14 @@ if (!validProviders.includes(rawProvider as CredentialProviderType)) {
 
 const snGrantType = optional('SN_GRANT_TYPE', 'password');
 
+const rawEnforcement = optional('ACCESS_ENFORCEMENT', 'off');
+if (rawEnforcement !== 'on' && rawEnforcement !== 'off') {
+  console.error(
+    `[config] Invalid ACCESS_ENFORCEMENT "${rawEnforcement}". Must be one of: on, off`,
+  );
+  process.exit(1);
+}
+
 export const config = {
   port: optionalInt('PORT', 3000),
   transport,
@@ -66,4 +74,8 @@ export const config = {
 
   credentialProvider: rawProvider as CredentialProviderType,
   gatewaySecret: optional('GATEWAY_SECRET', ''),
+
+  accessEnforcement: rawEnforcement as 'on' | 'off',
+  // Node lowercases incoming header names; keep the lookup key consistent.
+  accessHeader: optional('ACCESS_HEADER', 'x-mcp-access').toLowerCase(),
 };

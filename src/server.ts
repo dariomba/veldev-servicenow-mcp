@@ -8,18 +8,21 @@ import { registerCatalogReadTools } from './tools/catalog-read.js';
 import { registerCatalogWriteTools } from './tools/catalog-write.js';
 import { registerFixScriptTools } from './tools/fix-script.js';
 import { registerRecordProducerTools } from './tools/record-producer.js';
-import { ToolRegistry } from './tools/registry.js';
+import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
 import { registerScriptIncludeTools } from './tools/script-include.js';
 import { registerTableCrudTools } from './tools/table-crud.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
 import { registerUpdateSetTools } from './tools/update-sets.js';
 
-export function buildServer(snClient: ServiceNowClient): {
+export function buildServer(
+  snClient: ServiceNowClient,
+  registryOptions?: ToolRegistryOptions,
+): {
   server: McpServer;
   registry: ToolRegistry;
 } {
   const server = new McpServer({ name: 'servicenow-mcp', version: '0.1.0' });
-  const registry = new ToolRegistry(server);
+  const registry = new ToolRegistry(server, registryOptions);
 
   registerCatalogReadTools(registry, snClient);
   registerCatalogWriteTools(registry, snClient);
