@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-56 tools across 12 domains:
+51 tools across 12 domains:
 
 | Domain | What it covers |
 |---|---|
