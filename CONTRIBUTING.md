@@ -44,10 +44,12 @@ the architecture and the tool-authoring conventions.
 
 ## Adding a tool
 
-See the "How to add a new tool" section in [CLAUDE.md](CLAUDE.md). In short:
-create `src/tools/{domain}.ts`, export a `register{Domain}Tools` function,
-register it in `src/index.ts`, add a colocated `*.test.ts`, and write the tool
-description for the model (say *when* to use it and what format inputs take).
+See the "Adding a tool" section in [CLAUDE.md](CLAUDE.md). In short: add a
+file under `src/tools/<domain>/` and wire it in that domain's `index.ts` (or
+create a new domain folder and register its `register<Domain>Tools` in
+`buildServer()` in `src/server.ts`), add a colocated `*.test.ts`, and write the
+tool description for the model (say *when* to use it and what format inputs
+take).
 
 ## Pull requests
 
