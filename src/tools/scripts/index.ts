@@ -7,6 +7,7 @@ export function registerScriptTools(
   registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  registerScriptIncludeTools(registry, client);
-  registerBusinessRuleTools(registry, client);
+  const scripts = registry.scoped('scripts');
+  registerScriptIncludeTools(scripts, client);
+  registerBusinessRuleTools(scripts, client);
 }

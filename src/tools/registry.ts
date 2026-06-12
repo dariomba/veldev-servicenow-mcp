@@ -29,10 +29,68 @@ export type ToolAccess = 'read' | 'write';
  */
 export type AccessEnforcementMode = 'enforce' | 'observe' | 'off';
 
+/** A toolset is exactly a domain folder under src/tools/. */
+export const TOOLSETS = [
+  'atf',
+  'catalog',
+  'diagnostics',
+  'records',
+  'scripts',
+  'update-sets',
+] as const;
+
+export type Toolset = (typeof TOOLSETS)[number];
+
+function isToolset(value: string): value is Toolset {
+  return (TOOLSETS as readonly string[]).includes(value);
+}
+
+/**
+ * Parses the toolsets header (comma-separated names) into the registry's
+ * allowed-set. Fail-open: an absent header, unknown names, or an empty
+ * result fall back to the full surface (`undefined` = all toolsets) — this
+ * filter trims the tool surface, it never denies.
+ */
+export function parseAllowedToolsets(
+  raw: string | string[] | undefined,
+): Set<Toolset> | undefined {
+  if (raw === undefined) return undefined;
+
+  const names = (Array.isArray(raw) ? raw.join(',') : raw)
+    .split(',')
+    .map((name) => name.trim().toLowerCase())
+    .filter((name) => name.length > 0);
+
+  const unknown = names.filter((name) => !isToolset(name));
+  if (unknown.length > 0) {
+    log('WARN', 'Ignoring unknown toolset names in toolsets header', {
+      unknown,
+      known: [...TOOLSETS],
+    });
+  }
+
+  const allowed = new Set(names.filter(isToolset));
+  if (allowed.size === 0) {
+    log(
+      'WARN',
+      'Toolsets header present but resolved to no known toolset — registering all toolsets (fail-open)',
+      { header: raw },
+    );
+    return undefined;
+  }
+  return allowed;
+}
+
 export type ToolRegistryOptions = {
   enforcement: AccessEnforcementMode;
   /** Lowercase header name carrying the access value. */
   accessHeader?: string;
+  /**
+   * Toolsets allowed to register; absent → all. Must be constant for the
+   * server's lifetime. UX scoping only — the security boundary is the
+   * per-request access check in wrapHandler.
+   */
+  allowedToolsets?: ReadonlySet<Toolset>;
 };
 
 /**
@@ -76,16 +134,37 @@ type ToolConfig<
 };
 
 /**
+ * Registration surface handed to tool files — obtained via
+ * ToolRegistry.scoped(), so tool files never name their own toolset.
+ */
+export interface ToolRegistrar {
+  registerTool<
+    OutputArgs extends ZodRawShapeCompat | AnySchema,
+    InputArgs extends undefined | ZodRawShapeCompat | AnySchema = undefined,
+  >(
+    name: string,
+    config: ToolConfig<OutputArgs, InputArgs>,
+    cb: ToolCallback<InputArgs>,
+  ): void;
+}
+
+export type ToolInventoryEntry = {
+  access: ToolAccess;
+  group: Toolset | undefined;
+};
+
+/**
  * The only path to McpServer.registerTool. Requires every tool to declare
  * `access` at its registration site and derives the MCP `readOnlyHint`
  * annotation from it (the classification is authoritative — a conflicting
  * caller-supplied readOnlyHint is overridden; all other annotations are
  * preserved).
  */
-export class ToolRegistry {
-  private readonly access = new Map<string, ToolAccess>();
+export class ToolRegistry implements ToolRegistrar {
+  private readonly tools = new Map<string, ToolInventoryEntry>();
   private readonly enforcement: AccessEnforcementMode;
   private readonly accessHeader: string;
+  private readonly allowedToolsets?: ReadonlySet<Toolset>;
 
   constructor(
     private readonly server: McpServer,
@@ -93,6 +172,7 @@ export class ToolRegistry {
   ) {
     this.enforcement = options.enforcement;
     this.accessHeader = options.accessHeader ?? DEFAULT_ACCESS_HEADER;
+    this.allowedToolsets = options.allowedToolsets;
   }
 
   registerTool<
@@ -103,8 +183,43 @@ export class ToolRegistry {
     config: ToolConfig<OutputArgs, InputArgs>,
     cb: ToolCallback<InputArgs>,
   ): RegisteredTool {
+    return this.register(name, config, cb, undefined);
+  }
+
+  /**
+   * Returns a view that stamps `toolset` on every tool registered through
+   * it, and silently skips registration when the allowed-set excludes the
+   * toolset. Called once per domain, in the domain's index.ts.
+   */
+  scoped(toolset: Toolset): ToolRegistrar {
+    return {
+      registerTool: <
+        OutputArgs extends ZodRawShapeCompat | AnySchema,
+        InputArgs extends undefined | ZodRawShapeCompat | AnySchema = undefined,
+      >(
+        name: string,
+        config: ToolConfig<OutputArgs, InputArgs>,
+        cb: ToolCallback<InputArgs>,
+      ): void => {
+        if (this.allowedToolsets && !this.allowedToolsets.has(toolset)) {
+          return;
+        }
+        this.register(name, config, cb, toolset);
+      },
+    };
+  }
+
+  private register<
+    OutputArgs extends ZodRawShapeCompat | AnySchema,
+    InputArgs extends undefined | ZodRawShapeCompat | AnySchema = undefined,
+  >(
+    name: string,
+    config: ToolConfig<OutputArgs, InputArgs>,
+    cb: ToolCallback<InputArgs>,
+    group: Toolset | undefined,
+  ): RegisteredTool {
     const { access, annotations, ...rest } = config;
-    this.access.set(name, access);
+    this.tools.set(name, { access, group });
 
     return this.server.registerTool<OutputArgs, InputArgs>(
       name,
@@ -171,10 +286,10 @@ export class ToolRegistry {
       : 'read';
   }
 
-  /** Tool name → access classification, sorted by name. */
-  accessMap(): Record<string, ToolAccess> {
+  /** Tool name → { access, group }, sorted by name. */
+  inventory(): Record<string, ToolInventoryEntry> {
     return Object.fromEntries(
-      [...this.access.entries()].sort(([a], [b]) => a.localeCompare(b)),
+      [...this.tools.entries()].sort(([a], [b]) => a.localeCompare(b)),
     );
   }
 }

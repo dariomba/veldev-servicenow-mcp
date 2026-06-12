@@ -6,7 +6,7 @@ import {
   resolveDisplay,
   resolveValue,
 } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 import {
   AtfAddStep,
   AtfAddTestToSuite,
@@ -598,7 +598,7 @@ function formatInputStatus(
 }
 
 export function registerAtfTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   // ── Read: list step configs ──────────────────────────────────────────────

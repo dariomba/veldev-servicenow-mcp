@@ -7,6 +7,7 @@ export function registerDiagnosticsTools(
   registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  registerBackgroundScriptTools(registry, client);
-  registerFixScriptTools(registry, client);
+  const diagnostics = registry.scoped('diagnostics');
+  registerBackgroundScriptTools(diagnostics, client);
+  registerFixScriptTools(diagnostics, client);
 }

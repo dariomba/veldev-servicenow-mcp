@@ -23,7 +23,9 @@ import { buildServer } from './server.js';
 import { sessionStore } from './session-store.js';
 import {
   deriveEnforcement,
+  parseAllowedToolsets,
   type ToolRegistryOptions,
+  type Toolset,
 } from './tools/registry.js';
 
 function buildSnConfig(): ServiceNowConfig {
@@ -75,6 +77,18 @@ const registryOptions: ToolRegistryOptions = {
   ),
   accessHeader: config.accessHeader,
 };
+
+/**
+ * Toolset scoping is read once from the session-creating request and is
+ * constant for the session's life. Gateway mode only — env/stdio clients
+ * are direct users, not a trusted proxy, and always get the full surface.
+ */
+function resolveAllowedToolsets(
+  req: IncomingMessage,
+): Set<Toolset> | undefined {
+  if (config.credentialProvider !== 'header') return undefined;
+  return parseAllowedToolsets(req.headers[config.toolsetsHeader]);
+}
 
 async function resolveCredentials(
   req: IncomingMessage,
@@ -161,6 +175,13 @@ async function handleMcpRequest(
     credentialMs: Date.now() - credStart,
   });
 
+  const allowedToolsets = resolveAllowedToolsets(req);
+  if (allowedToolsets) {
+    log('INFO', 'Session tool surface scoped by toolsets header', {
+      toolsets: [...allowedToolsets],
+    });
+  }
+
   let resolvedSessionId: string | null = null;
 
   const transport = new StreamableHTTPServerTransport({
@@ -181,10 +202,10 @@ async function handleMcpRequest(
     },
   });
 
-  const { server } = buildServer(
-    new ServiceNowClient(credentials),
-    registryOptions,
-  );
+  const { server } = buildServer(new ServiceNowClient(credentials), {
+    ...registryOptions,
+    allowedToolsets,
+  });
 
   transport.onclose = () => {
     if (resolvedSessionId) {
