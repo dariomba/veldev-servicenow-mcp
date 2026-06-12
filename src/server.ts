@@ -9,6 +9,7 @@ import { registerCatalogWriteTools } from './tools/catalog-write.js';
 import { registerFixScriptTools } from './tools/fix-script.js';
 import { registerRecordProducerTools } from './tools/record-producer.js';
 import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
+import { registerScheduledJobTools } from './tools/scheduled-job.js';
 import { registerScriptIncludeTools } from './tools/script-include.js';
 import { registerTableCrudTools } from './tools/table-crud.js';
 import { registerUiPolicyTools } from './tools/ui-policy-write.js';
@@ -36,6 +37,7 @@ export function buildServer(
   registerFixScriptTools(registry, snClient);
   registerTableCrudTools(registry, snClient);
   registerAtfTools(registry, snClient);
+  registerScheduledJobTools(registry, snClient);
 
   return { server, registry };
 }
