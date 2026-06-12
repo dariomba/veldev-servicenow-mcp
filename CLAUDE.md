@@ -68,6 +68,7 @@ No hook enforces this — it is entirely your responsibility. Skipping step 1 me
 | `GATEWAY_SECRET` | ❌ | Required when `CREDENTIAL_PROVIDER=header` |
 | `ACCESS_ENFORCEMENT` | ❌ | `on` or `off` (default). Gateway mode only: write tools require the access header per request (default-deny). Env/stdio always behaves as write. |
 | `ACCESS_HEADER` | ❌ | Header carrying per-request access (default `x-mcp-access`) |
+| `TOOLSETS_HEADER` | ❌ | Header naming the toolsets (domain folders) a new session registers, comma-separated (default `x-mcp-toolsets`). Gateway mode only; fail-open UX scoping, not a security boundary. |
 
 ¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
 ² Required when `SN_AUTH_TYPE=oauth`
