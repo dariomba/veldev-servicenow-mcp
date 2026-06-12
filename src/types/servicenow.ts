@@ -168,8 +168,12 @@ export interface RawUserPreference {
 }
 
 export interface RawUpdateSet {
+  sys_id?: SnReference;
   name: SnReference;
   application: SnReference;
+  state?: SnReference;
+  description?: SnReference;
+  is_default?: SnReference;
 }
 
 // ---------------DOMAIN TYPES-------------------------------
