@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-57 tools across 13 domains:
+65 tools across 13 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -22,7 +22,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Client scripts** | Create and manage catalog client scripts |
 | **Script includes** | Create reusable server-side script includes |
 | **Business rules** | Create business rules with before/after/async modes |
-| **Update sets** | Show the active update set for the authenticated user |
+| **Update sets** | Show the active update set, list update sets by state/scope/name, create a new set, and switch the current set for the authenticated user |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
 | **Scheduled jobs** | Create, update, list, get, and run-now scheduled jobs (`sysauto`) — script executions, scheduled emails of reports, and template-based record generation |
@@ -219,6 +219,10 @@ Create a record producer called "New Hire Equipment" that generates an sc_req_it
 Create a fix script called "Backfill Incident SLAs" that queries all incidents missing an SLA and sets a default one
 
 Run the fix script with sys_id 18f9eee1c3d1479043e1fc0d0501315e
+
+Create an update set called "VPN Catalog Work" and make it my current set
+
+List my in-progress update sets, then switch to "VPN Catalog Work"
 
 Create an ATF test that submits the "VPN Access Request" catalog item and verifies the generated request record, mapping the record from the submit step into a server-side validation step
 ```
