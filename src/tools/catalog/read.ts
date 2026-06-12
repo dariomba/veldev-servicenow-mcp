@@ -24,7 +24,7 @@ import {
   resolveDisplay,
   resolveValue,
 } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 
 function normaliseVariable(raw: RawVariable): CatalogVariable {
   // raw.type is { value: "8", display_value: "Reference" } with sysparm_display_value=all;
@@ -379,7 +379,7 @@ function buildSummary(def: CatalogItemDefinition): string {
 }
 
 export function registerCatalogReadTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   registry.registerTool(

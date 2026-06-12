@@ -1,11 +1,11 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 import { ScriptIncludeCreate, ScriptIncludeUpdate } from './schemas.js';
 
 export function registerScriptIncludeTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   registry.registerTool(

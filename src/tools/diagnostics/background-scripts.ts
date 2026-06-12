@@ -1,10 +1,10 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import { handleError } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 import { BackgroundScriptExecute } from './schemas.js';
 
 export function registerBackgroundScriptTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   registry.registerTool(

@@ -11,7 +11,7 @@ import {
   resolveDisplay,
   resolveValue,
 } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 import {
   SetCurrentUpdateSet,
   UpdateSetCreate,
@@ -150,7 +150,7 @@ async function alsoSetForUiUser(
 }
 
 export function registerUpdateSetTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   registry.registerTool(

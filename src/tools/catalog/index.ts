@@ -10,9 +10,10 @@ export function registerCatalogTools(
   registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  registerCatalogReadTools(registry, client);
-  registerCatalogWriteTools(registry, client);
-  registerRecordProducerTools(registry, client);
-  registerUiPolicyTools(registry, client);
-  registerCatalogClientScriptTools(registry, client);
+  const catalog = registry.scoped('catalog');
+  registerCatalogReadTools(catalog, client);
+  registerCatalogWriteTools(catalog, client);
+  registerRecordProducerTools(catalog, client);
+  registerUiPolicyTools(catalog, client);
+  registerCatalogClientScriptTools(catalog, client);
 }

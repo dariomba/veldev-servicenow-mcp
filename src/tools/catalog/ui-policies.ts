@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
 import { handleError, isSysId, resolveValue } from '../helpers.js';
-import type { ToolRegistry } from '../registry.js';
+import type { ToolRegistrar } from '../registry.js';
 import {
   UiPolicyActionCreate,
   UiPolicyActionUpdate,
@@ -11,7 +11,7 @@ import {
 } from './schemas.js';
 
 export function registerUiPolicyTools(
-  registry: ToolRegistry,
+  registry: ToolRegistrar,
   client: ServiceNowClient,
 ): void {
   registry.registerTool(

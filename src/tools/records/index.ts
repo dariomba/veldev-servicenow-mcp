@@ -6,5 +6,5 @@ export function registerRecordTools(
   registry: ToolRegistry,
   client: ServiceNowClient,
 ): void {
-  registerTableCrudTools(registry, client);
+  registerTableCrudTools(registry.scoped('records'), client);
 }
