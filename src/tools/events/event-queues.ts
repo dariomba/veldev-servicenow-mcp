@@ -1,10 +1,13 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import type { SnReference } from '../../types/servicenow.js';
+import type { SnRecord } from '../../types/servicenow.js';
 import {
+  disp,
+  errText,
   handleError,
-  isSysId,
-  resolveDisplay,
-  resolveValue,
+  recordUrl,
+  requireSysId,
+  textResult,
+  val,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -19,13 +22,6 @@ const TABLE = 'sysevent_queue';
 // is the platform default (sysevent_queue.dictionary default_value).
 const DEFAULT_PROVIDER = '44af4464431212108da9a574a9b8f2f5';
 
-type SnRecord = Record<string, SnReference | undefined>;
-
-const val = (r: SnRecord, f: string): string =>
-  r[f] ? resolveValue(r[f] as SnReference) : '';
-const disp = (r: SnRecord, f: string): string =>
-  r[f] ? resolveDisplay(r[f] as SnReference) : '';
-
 /**
  * poll_interval is a glide_duration, stored as a date/time offset from the
  * 1970-01-01 epoch: 30s → "1970-01-01 00:00:30", 1 day → "1970-01-02 00:00:00".
@@ -33,10 +29,6 @@ const disp = (r: SnRecord, f: string): string =>
 function secondsToDuration(seconds: number): string {
   const d = new Date(Date.UTC(1970, 0, 1) + seconds * 1000);
   return d.toISOString().slice(0, 19).replace('T', ' ');
-}
-
-function recordUrl(client: ServiceNowClient, sysId: string): string {
-  return `${client.getInstanceUrl()}/${TABLE}.do?sys_id=${sysId}`;
 }
 
 interface QueueInput {
@@ -105,17 +97,12 @@ export function registerEventQueueTools(
           1,
         );
         if (existing.length > 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Event queue "${queue}" already exists — skipped.`,
-                  `sys_id: ${val(existing[0], 'sys_id')}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Event queue "${queue}" already exists — skipped.`,
+              `sys_id: ${val(existing[0], 'sys_id')}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -127,22 +114,17 @@ export function registerEventQueueTools(
         const record = await client.createRecord<SnRecord>(TABLE, body);
         const sys_id = val(record, 'sys_id');
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Event queue created.',
-                '',
-                `queue:            ${queue}`,
-                `processing_order: ${rest.processing_order ?? 'parallel'}`,
-                `poll_interval:    ${rest.poll_interval_seconds ?? 30}s`,
-                `sys_id:           ${sys_id}`,
-                `URL:              ${recordUrl(client, sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Event queue created.',
+            '',
+            `queue:            ${queue}`,
+            `processing_order: ${rest.processing_order ?? 'parallel'}`,
+            `poll_interval:    ${rest.poll_interval_seconds ?? 30}s`,
+            `sys_id:           ${sys_id}`,
+            `URL:              ${recordUrl(client, TABLE, sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -167,46 +149,26 @@ export function registerEventQueueTools(
     },
     async ({ sys_id, queue, ...rest }) => {
       try {
-        if (!isSysId(sys_id))
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid sysevent_queue sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+        const err = requireSysId(sys_id, 'sysevent_queue sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (queue !== undefined) body.queue = queue;
         applyQueueFields(body, rest);
 
         if (Object.keys(body).length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No fields to update — all values were omitted.',
-              },
-            ],
-          };
+          return textResult('No fields to update — all values were omitted.');
         }
 
         await client.patchRecord<unknown>(TABLE, sys_id, body);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Event queue updated successfully.',
-                '',
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ')}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Event queue updated successfully.',
+            '',
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ')}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -253,7 +215,7 @@ export function registerEventQueueTools(
               .join('\n')
           : 'No event queues matched.';
 
-        return { content: [{ type: 'text' as const, text: summary }] };
+        return textResult(summary);
       } catch (err) {
         return handleError(err);
       }

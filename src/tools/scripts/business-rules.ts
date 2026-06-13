@@ -1,6 +1,6 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId } from '../helpers.js';
+import { errText, handleError, requireSysId, textResult } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { BusinessRuleCreate, BusinessRuleUpdate } from './schemas.js';
 
@@ -64,20 +64,15 @@ export function registerBusinessRuleTools(
         );
 
         if (existing.length > 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Business rule already exists — skipped.`,
-                  ``,
-                  `name:       ${name}`,
-                  `collection: ${collection}`,
-                  `sys_id:     ${existing[0].sys_id.value}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Business rule already exists — skipped.`,
+              ``,
+              `name:       ${name}`,
+              `collection: ${collection}`,
+              `sys_id:     ${existing[0].sys_id.value}`,
+            ].join('\n'),
+          );
         }
 
         const isAdvanced = advanced === true;
@@ -114,22 +109,17 @@ export function registerBusinessRuleTools(
           body,
         );
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Business rule created successfully.`,
-                ``,
-                `name:       ${name}`,
-                `collection: ${collection}`,
-                `advanced: ${isAdvanced}`,
-                `when:     ${when ?? '—'}`,
-                `sys_id:   ${record.sys_id.value}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Business rule created successfully.`,
+            ``,
+            `name:       ${name}`,
+            `collection: ${collection}`,
+            `advanced: ${isAdvanced}`,
+            `when:     ${when ?? '—'}`,
+            `sys_id:   ${record.sys_id.value}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -175,17 +165,8 @@ export function registerBusinessRuleTools(
       script,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid business rule sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'business rule sys_id');
+        if (err) return errText(err);
 
         const isAdvanced = advanced === true;
         const body: Record<string, unknown> = {};
@@ -219,31 +200,19 @@ export function registerBusinessRuleTools(
         if (script !== undefined) body.script = script;
 
         if (Object.keys(body).length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `No fields to update — all values were omitted.`,
-              },
-            ],
-          };
+          return textResult('No fields to update — all values were omitted.');
         }
 
         await client.patchRecord<unknown>('sys_script', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Business rule updated successfully.`,
-                ``,
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ')}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Business rule updated successfully.`,
+            ``,
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ')}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

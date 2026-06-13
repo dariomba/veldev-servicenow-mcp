@@ -19,10 +19,12 @@ import {
 } from '../../types/servicenow.js';
 import {
   boolStr,
+  errText,
   handleError,
   isSysId,
   resolveDisplay,
   resolveValue,
+  textResult,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 
@@ -415,9 +417,7 @@ export function registerCatalogReadTools(
       try {
         const definition = await fetchCatalogItemDefinition(client, id_or_name);
         const summary = buildSummary(definition);
-        return {
-          content: [{ type: 'text' as const, text: summary }],
-        };
+        return textResult(summary);
       } catch (err) {
         return handleError(err);
       }
@@ -470,17 +470,10 @@ export function registerCatalogReadTools(
     async ({ search, category_sys_id, include_inactive, limit }) => {
       try {
         if (category_sys_id && !isSysId(category_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  `"${category_sys_id}" is not a valid sys_id. ` +
-                  `Call list_catalog_categories to find the sys_id for that category name.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${category_sys_id}" is not a valid sys_id. ` +
+              `Call list_catalog_categories to find the sys_id for that category name.`,
+          );
         }
 
         const conditions: string[] = [];
@@ -513,14 +506,9 @@ export function registerCatalogReadTools(
         );
 
         if (items.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No catalog items found matching the given criteria.',
-              },
-            ],
-          };
+          return textResult(
+            'No catalog items found matching the given criteria.',
+          );
         }
 
         const lines = [
@@ -542,9 +530,7 @@ export function registerCatalogReadTools(
           'Tip: call get_catalog_item_definition with a sys_id to see the full detail.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -597,16 +583,11 @@ export function registerCatalogReadTools(
         );
 
         if (categories.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: search
-                  ? `No categories found matching "${search}".`
-                  : 'No categories found on this instance.',
-              },
-            ],
-          };
+          return textResult(
+            search
+              ? `No categories found matching "${search}".`
+              : 'No categories found on this instance.',
+          );
         }
 
         const lines = [
@@ -626,9 +607,7 @@ export function registerCatalogReadTools(
           'Tip: pass the sys_id into list_catalog_items as category_sys_id.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -674,16 +653,11 @@ export function registerCatalogReadTools(
         }>('sc_catalog', query, ['sys_id', 'title', 'description'], 50);
 
         if (catalogs.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: search
-                  ? `No catalogs found matching "${search}".`
-                  : 'No catalogs found on this instance.',
-              },
-            ],
-          };
+          return textResult(
+            search
+              ? `No catalogs found matching "${search}".`
+              : 'No catalogs found on this instance.',
+          );
         }
 
         const lines = [
@@ -700,9 +674,7 @@ export function registerCatalogReadTools(
           'Tip: pass the sys_id into create_catalog_item or update_catalog_item as catalog_sys_id.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -748,16 +720,11 @@ export function registerCatalogReadTools(
         }>('sys_hub_flow', query, ['sys_id', 'name', 'description'], 50);
 
         if (flows.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: search
-                  ? `No flows found matching "${search}".`
-                  : 'No flows found on this instance.',
-              },
-            ],
-          };
+          return textResult(
+            search
+              ? `No flows found matching "${search}".`
+              : 'No flows found on this instance.',
+          );
         }
 
         const lines = [
@@ -774,9 +741,7 @@ export function registerCatalogReadTools(
           'Tip: pass the sys_id into create_catalog_item or update_catalog_item as flow_designer_flow.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -824,16 +789,11 @@ export function registerCatalogReadTools(
         }>('wf_workflow', query, ['sys_id', 'name', 'description'], 50);
 
         if (workflows.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: search
-                  ? `No workflows found matching "${search}".`
-                  : 'No workflows found on this instance.',
-              },
-            ],
-          };
+          return textResult(
+            search
+              ? `No workflows found matching "${search}".`
+              : 'No workflows found on this instance.',
+          );
         }
 
         const lines = [
@@ -850,9 +810,7 @@ export function registerCatalogReadTools(
           'Tip: pass the sys_id into create_catalog_item or update_catalog_item as workflow.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -900,20 +858,15 @@ export function registerCatalogReadTools(
 
         if (exact.length === 1) {
           const t = exact[0];
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Table resolved.`,
-                  ``,
-                  `Name:   ${resolveDisplay(t.name)}`,
-                  `Label:  ${resolveDisplay(t.label)}`,
-                  `sys_id: ${resolveValue(t.sys_id)}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Table resolved.`,
+              ``,
+              `Name:   ${resolveDisplay(t.name)}`,
+              `Label:  ${resolveDisplay(t.label)}`,
+              `sys_id: ${resolveValue(t.sys_id)}`,
+            ].join('\n'),
+          );
         }
 
         const results = await client.listRecords<{
@@ -928,14 +881,7 @@ export function registerCatalogReadTools(
         );
 
         if (results.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `No table found matching "${name}".`,
-              },
-            ],
-          };
+          return textResult(`No table found matching "${name}".`);
         }
 
         const lines = [
@@ -951,9 +897,7 @@ export function registerCatalogReadTools(
           'Tip: re-call with the exact internal name for a single match.',
         ];
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -997,15 +941,9 @@ export function registerCatalogReadTools(
     async ({ variable_set_sys_id, names }) => {
       try {
         if (!variable_set_sys_id && (!names || names.length === 0)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide at least one of: variable_set_sys_id or names.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide at least one of: variable_set_sys_id or names.',
+          );
         }
 
         const conditions: string[] = ['variable_set!=NULL', 'active=true'];
@@ -1031,17 +969,11 @@ export function registerCatalogReadTools(
         );
 
         if (vars.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  names && names.length > 0
-                    ? `No variable set variables found matching [${names.join(', ')}]. All must be created standalone.`
-                    : 'No active variables found in this variable set.',
-              },
-            ],
-          };
+          return textResult(
+            names && names.length > 0
+              ? `No variable set variables found matching [${names.join(', ')}]. All must be created standalone.`
+              : 'No active variables found in this variable set.',
+          );
         }
 
         // Group by variable set — use .value (sys_id) as the map key, not display_value
@@ -1082,9 +1014,7 @@ export function registerCatalogReadTools(
           lines.push('');
         }
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -1146,15 +1076,9 @@ export function registerCatalogReadTools(
         ];
 
         if (!name && !short_description) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide at least one filter: name or short_description.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide at least one filter: name or short_description.',
+          );
         }
 
         const parts = ['active=true'];
@@ -1170,14 +1094,7 @@ export function registerCatalogReadTools(
         );
 
         if (results.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No user criteria found matching your search.',
-              },
-            ],
-          };
+          return textResult('No user criteria found matching your search.');
         }
 
         const lines: string[] = [

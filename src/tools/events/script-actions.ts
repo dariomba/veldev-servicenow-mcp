@@ -1,10 +1,13 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import type { SnReference } from '../../types/servicenow.js';
+import type { SnRecord } from '../../types/servicenow.js';
 import {
+  disp,
+  errText,
   handleError,
-  isSysId,
-  resolveDisplay,
-  resolveValue,
+  recordUrl,
+  requireSysId,
+  textResult,
+  val,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -14,17 +17,6 @@ import {
 } from './schemas.js';
 
 const TABLE = 'sysevent_script_action';
-
-type SnRecord = Record<string, SnReference | undefined>;
-
-const val = (r: SnRecord, f: string): string =>
-  r[f] ? resolveValue(r[f] as SnReference) : '';
-const disp = (r: SnRecord, f: string): string =>
-  r[f] ? resolveDisplay(r[f] as SnReference) : '';
-
-function recordUrl(client: ServiceNowClient, sysId: string): string {
-  return `${client.getInstanceUrl()}/${TABLE}.do?sys_id=${sysId}`;
-}
 
 export function registerScriptActionTools(
   registry: ToolRegistrar,
@@ -75,17 +67,12 @@ export function registerScriptActionTools(
           1,
         );
         if (existing.length > 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Script action "${name}" on event "${event_name}" already exists — skipped.`,
-                  `sys_id: ${val(existing[0], 'sys_id')}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Script action "${name}" on event "${event_name}" already exists — skipped.`,
+              `sys_id: ${val(existing[0], 'sys_id')}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -103,23 +90,18 @@ export function registerScriptActionTools(
         const record = await client.createRecord<SnRecord>(TABLE, body);
         const sys_id = val(record, 'sys_id');
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Script action created.',
-                '',
-                `name:        ${name}`,
-                `event_name:  ${event_name}`,
-                `synchronous: ${synchronous}`,
-                `active:      ${active}`,
-                `sys_id:      ${sys_id}`,
-                `URL:         ${recordUrl(client, sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Script action created.',
+            '',
+            `name:        ${name}`,
+            `event_name:  ${event_name}`,
+            `synchronous: ${synchronous}`,
+            `active:      ${active}`,
+            `sys_id:      ${sys_id}`,
+            `URL:         ${recordUrl(client, TABLE, sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -154,16 +136,8 @@ export function registerScriptActionTools(
       description,
     }) => {
       try {
-        if (!isSysId(sys_id))
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid sysevent_script_action sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+        const err = requireSysId(sys_id, 'sysevent_script_action sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
@@ -177,30 +151,18 @@ export function registerScriptActionTools(
         if (description !== undefined) body.description = description;
 
         if (Object.keys(body).length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No fields to update — all values were omitted.',
-              },
-            ],
-          };
+          return textResult('No fields to update — all values were omitted.');
         }
 
         await client.patchRecord<unknown>(TABLE, sys_id, body);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Script action updated successfully.',
-                '',
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ')}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Script action updated successfully.',
+            '',
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ')}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -245,7 +207,7 @@ export function registerScriptActionTools(
               .join('\n')
           : 'No script actions matched.';
 
-        return { content: [{ type: 'text' as const, text: summary }] };
+        return textResult(summary);
       } catch (err) {
         return handleError(err);
       }

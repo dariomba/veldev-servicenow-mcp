@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError } from '../helpers.js';
+import { handleError, textResult } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 
 export function registerTableCrudTools(
@@ -75,14 +75,7 @@ export function registerTableCrudTools(
           offset,
         );
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(records, null, 2),
-            },
-          ],
-        };
+        return textResult(JSON.stringify(records, null, 2));
       } catch (err) {
         return handleError(err);
       }
@@ -129,14 +122,7 @@ export function registerTableCrudTools(
           fields,
         );
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(record, null, 2),
-            },
-          ],
-        };
+        return textResult(JSON.stringify(record, null, 2));
       } catch (err) {
         return handleError(err);
       }
@@ -184,9 +170,7 @@ export function registerTableCrudTools(
         if (created.number?.value)
           lines.push(`number: ${created.number.value}`);
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -239,14 +223,9 @@ export function registerTableCrudTools(
           await client.updateRecord(table, sys_id, data);
         }
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Updated record in "${table}" (sys_id: ${sys_id}) using ${patch ? 'PATCH' : 'PUT'}.`,
-            },
-          ],
-        };
+        return textResult(
+          `Updated record in "${table}" (sys_id: ${sys_id}) using ${patch ? 'PATCH' : 'PUT'}.`,
+        );
       } catch (err) {
         return handleError(err);
       }

@@ -1,6 +1,12 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { ClientScriptCreate, ClientScriptUpdate } from './schemas.js';
 
@@ -63,15 +69,9 @@ export function registerClientScriptTools(
     }) => {
       try {
         if (FIELD_REQUIRED_TYPES.has(type) && !field) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `field is required for ${type} client script "${name}".`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `field is required for ${type} client script "${name}".`,
+          );
         }
 
         const existing = await client.listRecords<{ sys_id: SnReference }>(
@@ -82,20 +82,15 @@ export function registerClientScriptTools(
         );
 
         if (existing.length > 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Client script already exists — skipped.`,
-                  ``,
-                  `name:   ${name}`,
-                  `table:  ${table}`,
-                  `sys_id: ${resolveValue(existing[0].sys_id)}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Client script already exists — skipped.`,
+              ``,
+              `name:   ${name}`,
+              `table:  ${table}`,
+              `sys_id: ${resolveValue(existing[0].sys_id)}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -121,22 +116,17 @@ export function registerClientScriptTools(
           body,
         );
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Client script created successfully.`,
-                ``,
-                `name:   ${name}`,
-                `table:  ${table}`,
-                `type:   ${type}`,
-                `field:  ${field ?? '—'}`,
-                `sys_id: ${resolveValue(record.sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Client script created successfully.`,
+            ``,
+            `name:   ${name}`,
+            `table:  ${table}`,
+            `type:   ${type}`,
+            `field:  ${field ?? '—'}`,
+            `sys_id: ${resolveValue(record.sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -179,17 +169,8 @@ export function registerClientScriptTools(
       messages,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid client script sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'client script sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
@@ -210,31 +191,19 @@ export function registerClientScriptTools(
         if (messages !== undefined) body.messages = messages;
 
         if (Object.keys(body).length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `No fields to update — all values were omitted.`,
-              },
-            ],
-          };
+          return textResult('No fields to update — all values were omitted.');
         }
 
         await client.patchRecord<unknown>('sys_script_client', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Client script updated successfully.`,
-                ``,
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ')}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Client script updated successfully.`,
+            ``,
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ')}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  isSysId,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
   UiPolicyActionCreate,
@@ -49,26 +56,14 @@ export function registerUiPolicyTools(
         for (const p of policies) {
           if (p.applies_to === 'item') {
             if (!p.catalog_item) {
-              return {
-                content: [
-                  {
-                    type: 'text' as const,
-                    text: `catalog_item is required for policy "${p.short_description}" when applies_to='item'.`,
-                  },
-                ],
-                isError: true,
-              };
+              return errText(
+                `catalog_item is required for policy "${p.short_description}" when applies_to='item'.`,
+              );
             }
             if (!isSysId(p.catalog_item)) {
-              return {
-                content: [
-                  {
-                    type: 'text' as const,
-                    text: `"${p.catalog_item}" is not a valid catalog item sys_id (policy: "${p.short_description}").`,
-                  },
-                ],
-                isError: true,
-              };
+              return errText(
+                `"${p.catalog_item}" is not a valid catalog item sys_id (policy: "${p.short_description}").`,
+              );
             }
           }
         }
@@ -118,9 +113,7 @@ export function registerUiPolicyTools(
           `Pass these sys_ids to batch_create_ui_policy_actions to attach per-variable actions.`,
         );
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -161,59 +154,29 @@ export function registerUiPolicyTools(
         // Validate inputs upfront
         for (const a of actions) {
           if (!isSysId(a.ui_policy)) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `"${a.ui_policy}" is not a valid UI Policy sys_id (variable: ${a.catalog_variable}).`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `"${a.ui_policy}" is not a valid UI Policy sys_id (variable: ${a.catalog_variable}).`,
+            );
           }
           if (!isSysId(a.catalog_item)) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `"${a.catalog_item}" is not a valid catalog item sys_id (variable: ${a.catalog_variable}).`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `"${a.catalog_item}" is not a valid catalog item sys_id (variable: ${a.catalog_variable}).`,
+            );
           }
           if (a.mandatory === 'true' && a.disabled === 'true') {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `mandatory and disabled cannot both be 'true' on the same action (variable: ${a.catalog_variable}).`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `mandatory and disabled cannot both be 'true' on the same action (variable: ${a.catalog_variable}).`,
+            );
           }
           if (a.value_action === 'set_value' && !a.value) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `value is required when value_action='set_value' (variable: ${a.catalog_variable}).`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `value is required when value_action='set_value' (variable: ${a.catalog_variable}).`,
+            );
           }
           if (a.field_message_type !== 'none' && !a.field_message) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `field_message is required when field_message_type is not 'none' (variable: ${a.catalog_variable}).`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `field_message is required when field_message_type is not 'none' (variable: ${a.catalog_variable}).`,
+            );
           }
         }
 
@@ -333,9 +296,7 @@ for (var i = 0; i < links.length; i++) {
           }
         }
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -374,27 +335,12 @@ for (var i = 0; i < links.length; i++) {
       run_scripts,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid UI policy sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'UI policy sys_id');
+        if (err) return errText(err);
         if (catalog_item !== undefined && !isSysId(catalog_item)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${catalog_item}" is not a valid catalog item sys_id.`,
+          );
         }
 
         const body: Record<string, unknown> = {};
@@ -412,19 +358,14 @@ for (var i = 0; i < links.length; i++) {
 
         await client.patchRecord<unknown>('catalog_ui_policy', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `UI Policy updated successfully.`,
-                ``,
-                `sys_id: ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `UI Policy updated successfully.`,
+            ``,
+            `sys_id: ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -468,53 +409,24 @@ for (var i = 0; i < links.length; i++) {
       cleared,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid UI policy action sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'UI policy action sys_id');
+        if (err) return errText(err);
         if (mandatory === 'true' && disabled === 'true') {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `mandatory and disabled cannot both be 'true' on the same action.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `mandatory and disabled cannot both be 'true' on the same action.`,
+          );
         }
         if (value_action === 'set_value' && !value) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `value is required when value_action='set_value'.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(`value is required when value_action='set_value'.`);
         }
         if (
           field_message_type !== undefined &&
           field_message_type !== 'none' &&
           !field_message
         ) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `field_message is required when field_message_type is not 'none'.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `field_message is required when field_message_type is not 'none'.`,
+          );
         }
 
         const body: Record<string, unknown> = {};
@@ -551,19 +463,14 @@ if (gr.get('${sys_id}')) {
           await client.executeBackgroundScriptTrigger(bgScript);
         }
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `UI Policy action updated successfully.`,
-                ``,
-                `sys_id: ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `UI Policy action updated successfully.`,
+            ``,
+            `sys_id: ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

@@ -1,6 +1,13 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  isSysId,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { RecordProducerCreate, RecordProducerUpdate } from './schemas.js';
 
@@ -55,39 +62,20 @@ export function registerRecordProducerTools(
     }) => {
       try {
         if (catalog_sys_id && !isSysId(catalog_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_sys_id}" is not a valid sys_id (must be 32 hex chars).`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${catalog_sys_id}" is not a valid sys_id (must be 32 hex chars).`,
+          );
         }
         if (category_sys_id && !isSysId(category_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  `"${category_sys_id}" is not a valid category sys_id. ` +
-                  `Call list_catalog_categories to find the sys_id for that category name.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${category_sys_id}" is not a valid category sys_id. ` +
+              `Call list_catalog_categories to find the sys_id for that category name.`,
+          );
         }
         if (flow_designer_flow !== undefined && workflow !== undefined) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide either flow_designer_flow or workflow, not both.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide either flow_designer_flow or workflow, not both.',
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -123,23 +111,18 @@ export function registerRecordProducerTools(
 
         const sysId = resolveValue(created.sys_id);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Record producer created successfully.`,
-                ``,
-                `Name:   ${name}`,
-                `Table:  ${table_name}`,
-                `sys_id: ${sysId}`,
-                ``,
-                `Save the sys_id above — you will need it to add variables, UI policies,`,
-                `client scripts, or user criteria to this record producer.`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Record producer created successfully.`,
+            ``,
+            `Name:   ${name}`,
+            `Table:  ${table_name}`,
+            `sys_id: ${sysId}`,
+            ``,
+            `Save the sys_id above — you will need it to add variables, UI policies,`,
+            `client scripts, or user criteria to this record producer.`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -189,49 +172,20 @@ export function registerRecordProducerTools(
       availability,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid record producer sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'record producer sys_id');
+        if (err) return errText(err);
         if (catalog_sys_id !== undefined && !isSysId(catalog_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_sys_id}" is not a valid catalog sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(`"${catalog_sys_id}" is not a valid catalog sys_id.`);
         }
         if (category_sys_id !== undefined && !isSysId(category_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${category_sys_id}" is not a valid category sys_id. Call list_catalog_categories to find the sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${category_sys_id}" is not a valid category sys_id. Call list_catalog_categories to find the sys_id.`,
+          );
         }
         if (flow_designer_flow !== undefined && workflow !== undefined) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide either flow_designer_flow or workflow, not both.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide either flow_designer_flow or workflow, not both.',
+          );
         }
 
         const body: Record<string, unknown> = {};
@@ -261,19 +215,14 @@ export function registerRecordProducerTools(
 
         await client.patchRecord<unknown>('sc_cat_item_producer', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Record producer updated successfully.`,
-                ``,
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Record producer updated successfully.`,
+            ``,
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

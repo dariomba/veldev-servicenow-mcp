@@ -3,6 +3,8 @@ export interface SnReference {
   display_value: string;
 }
 
+export type SnRecord = Record<string, SnReference | undefined>;
+
 export interface SnCurrencyField extends SnReference {
   currency_display_value: string;
 }

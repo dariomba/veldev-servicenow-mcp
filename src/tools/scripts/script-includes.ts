@@ -1,6 +1,12 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { ScriptIncludeCreate, ScriptIncludeUpdate } from './schemas.js';
 
@@ -49,17 +55,12 @@ export function registerScriptIncludeTools(
 
         if (existing.length > 0) {
           const sys_id = resolveValue(existing[0].sys_id);
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Script Include "${name}" already exists — skipped.`,
-                  `sys_id: ${sys_id}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Script Include "${name}" already exists — skipped.`,
+              `sys_id: ${sys_id}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -79,22 +80,17 @@ export function registerScriptIncludeTools(
 
         const sys_id = resolveValue(record.sys_id);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Script Include created.`,
-                ``,
-                `Name:            ${name}`,
-                `sys_id:          ${sys_id}`,
-                `client_callable: ${client_callable}`,
-                `access:          ${access}`,
-                `active:          ${active}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Script Include created.`,
+            ``,
+            `Name:            ${name}`,
+            `sys_id:          ${sys_id}`,
+            `client_callable: ${client_callable}`,
+            `access:          ${access}`,
+            `active:          ${active}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -129,17 +125,8 @@ export function registerScriptIncludeTools(
       active,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid Script Include sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'Script Include sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (name !== undefined) {
@@ -155,19 +142,14 @@ export function registerScriptIncludeTools(
 
         await client.patchRecord<unknown>('sys_script_include', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Script Include updated successfully.`,
-                ``,
-                `sys_id: ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Script Include updated successfully.`,
+            ``,
+            `sys_id: ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

@@ -1,6 +1,12 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { FixScriptCreate, FixScriptRun, FixScriptUpdate } from './schemas.js';
 
@@ -50,17 +56,12 @@ export function registerFixScriptTools(
 
         if (existing.length > 0) {
           const sys_id = resolveValue(existing[0].sys_id);
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Fix Script "${name}" already exists — skipped.`,
-                  `sys_id: ${sys_id}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Fix Script "${name}" already exists — skipped.`,
+              `sys_id: ${sys_id}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -79,22 +80,17 @@ export function registerFixScriptTools(
 
         const sys_id = resolveValue(record.sys_id);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Fix Script created.`,
-                ``,
-                `Name:                ${name}`,
-                `sys_id:              ${sys_id}`,
-                `record_for_rollback: ${record_for_rollback}`,
-                `before:              ${before}`,
-                `unloadable:          ${unloadable}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Fix Script created.`,
+            ``,
+            `Name:                ${name}`,
+            `sys_id:              ${sys_id}`,
+            `record_for_rollback: ${record_for_rollback}`,
+            `before:              ${before}`,
+            `unloadable:          ${unloadable}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -129,17 +125,8 @@ export function registerFixScriptTools(
       unloadable,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid Fix Script sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'Fix Script sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
@@ -152,19 +139,14 @@ export function registerFixScriptTools(
 
         await client.patchRecord<unknown>('sys_script_fix', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Fix Script updated successfully.`,
-                ``,
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Fix Script updated successfully.`,
+            ``,
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -193,17 +175,8 @@ export function registerFixScriptTools(
     },
     async ({ sys_id }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid Fix Script sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'Fix Script sys_id');
+        if (err) return errText(err);
 
         // Build a runner that executes the stored fix script via GlideScopedEvaluator,
         // matching the same mechanism ServiceNow uses when running a fix script from the UI.
@@ -218,21 +191,16 @@ export function registerFixScriptTools(
         const result =
           await client.executeBackgroundScriptTrigger(runnerScript);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Fix Script execution scheduled.`,
-                ``,
-                `fix_script_sys_id: ${sys_id}`,
-                `trigger_sys_id:    ${result.trigger_sys_id}`,
-                `trigger_name:      ${result.trigger_name}`,
-                `next_action:       ${result.next_action}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Fix Script execution scheduled.`,
+            ``,
+            `fix_script_sys_id: ${sys_id}`,
+            `trigger_sys_id:    ${result.trigger_sys_id}`,
+            `trigger_name:      ${result.trigger_name}`,
+            `next_action:       ${result.next_action}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

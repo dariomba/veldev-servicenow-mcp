@@ -1,10 +1,14 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import type { SnReference } from '../../types/servicenow.js';
+import type { SnRecord } from '../../types/servicenow.js';
 import {
+  disp,
+  errText,
   handleError,
-  isSysId,
-  resolveDisplay,
-  resolveValue,
+  recordUrl,
+  requireSysId,
+  richResult,
+  textResult,
+  val,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -18,21 +22,10 @@ const TABLE = 'sysevent_register';
 const SCRIPT_ACTION_TABLE = 'sysevent_script_action';
 const QUEUE_TABLE = 'sysevent_queue';
 
-type SnRecord = Record<string, SnReference | undefined>;
-
-const val = (r: SnRecord, f: string): string =>
-  r[f] ? resolveValue(r[f] as SnReference) : '';
-const disp = (r: SnRecord, f: string): string =>
-  r[f] ? resolveDisplay(r[f] as SnReference) : '';
-
 const CALLER_ACCESS: Record<string, string> = {
   tracking: '1',
   restriction: '2',
 };
-
-function recordUrl(client: ServiceNowClient, sysId: string): string {
-  return `${client.getInstanceUrl()}/${TABLE}.do?sys_id=${sysId}`;
-}
 
 export function registerEventRegistrationTools(
   registry: ToolRegistrar,
@@ -81,17 +74,12 @@ export function registerEventRegistrationTools(
         );
         if (existing.length > 0) {
           const sys_id = val(existing[0], 'sys_id');
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Event "${event_name}" is already registered — skipped.`,
-                  `sys_id: ${sys_id}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Event "${event_name}" is already registered — skipped.`,
+              `sys_id: ${sys_id}`,
+            ].join('\n'),
+          );
         }
 
         const body: Record<string, unknown> = { event_name };
@@ -107,22 +95,17 @@ export function registerEventRegistrationTools(
         const record = await client.createRecord<SnRecord>(TABLE, body);
         const sys_id = val(record, 'sys_id');
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Event registered.',
-                '',
-                `event_name: ${event_name}`,
-                `table:      ${table ?? '—'}`,
-                `queue:      ${queue ?? 'DEFAULT'}`,
-                `sys_id:     ${sys_id}`,
-                `URL:        ${recordUrl(client, sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Event registered.',
+            '',
+            `event_name: ${event_name}`,
+            `table:      ${table ?? '—'}`,
+            `queue:      ${queue ?? 'DEFAULT'}`,
+            `sys_id:     ${sys_id}`,
+            `URL:        ${recordUrl(client, TABLE, sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -157,16 +140,8 @@ export function registerEventRegistrationTools(
       caller_access,
     }) => {
       try {
-        if (!isSysId(sys_id))
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid sysevent_register sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+        const err = requireSysId(sys_id, 'sysevent_register sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (event_name !== undefined) body.event_name = event_name;
@@ -180,30 +155,18 @@ export function registerEventRegistrationTools(
           body.caller_access = CALLER_ACCESS[caller_access];
 
         if (Object.keys(body).length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No fields to update — all values were omitted.',
-              },
-            ],
-          };
+          return textResult('No fields to update — all values were omitted.');
         }
 
         await client.patchRecord<unknown>(TABLE, sys_id, body);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Event registration updated successfully.',
-                '',
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ')}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Event registration updated successfully.',
+            '',
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ')}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -246,7 +209,7 @@ export function registerEventRegistrationTools(
               .join('\n')
           : 'No registered events matched.';
 
-        return { content: [{ type: 'text' as const, text: summary }] };
+        return textResult(summary);
       } catch (err) {
         return handleError(err);
       }
@@ -267,16 +230,8 @@ export function registerEventRegistrationTools(
     },
     async ({ sys_id }) => {
       try {
-        if (!isSysId(sys_id))
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid sysevent_register sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+        const err = requireSysId(sys_id, 'sysevent_register sys_id');
+        if (err) return errText(err);
 
         const base = await client.getRecord<SnRecord>(TABLE, sys_id, [
           'sys_id',
@@ -327,7 +282,7 @@ export function registerEventRegistrationTools(
           fired_by: disp(base, 'fired_by'),
           priority: val(base, 'priority'),
           caller_access: disp(base, 'caller_access'),
-          url: recordUrl(client, sys_id),
+          url: recordUrl(client, TABLE, sys_id),
           script_actions: listeners,
         };
 
@@ -344,12 +299,7 @@ export function registerEventRegistrationTools(
           `URL:      ${result.url}`,
         ].join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            { type: 'text' as const, text: JSON.stringify(result, null, 2) },
-          ],
-        };
+        return richResult(summary, result);
       } catch (err) {
         return handleError(err);
       }
