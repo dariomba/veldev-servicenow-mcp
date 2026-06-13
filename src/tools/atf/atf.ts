@@ -1,10 +1,15 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import type { SnReference } from '../../types/servicenow.js';
+import type { SnRecord } from '../../types/servicenow.js';
 import {
+  disp,
+  errText,
   handleError,
   isSysId,
-  resolveDisplay,
-  resolveValue,
+  recordUrl,
+  requireSysId,
+  richResult,
+  textResult,
+  val,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -48,13 +53,6 @@ const CHOICE_TABLE = 'sys_choice';
  * data-pill picker writes both; so does buildInputUpsertScript.
  */
 
-type SnRecord = Record<string, SnReference | undefined>;
-
-const val = (r: SnRecord, f: string): string =>
-  r[f] ? resolveValue(r[f] as SnReference) : '';
-const disp = (r: SnRecord, f: string): string =>
-  r[f] ? resolveDisplay(r[f] as SnReference) : '';
-
 interface AtfInputDef {
   sysId: string;
   element: string;
@@ -94,14 +92,6 @@ interface AtfOutputDef {
   element: string;
   label: string;
   internalType: string;
-}
-
-function recordUrl(
-  client: ServiceNowClient,
-  table: string,
-  sysId: string,
-): string {
-  return `${client.getInstanceUrl()}/${table}.do?sys_id=${sysId}`;
 }
 
 async function resolveStepConfig(
@@ -651,12 +641,7 @@ export function registerAtfTools(
           ),
         ].join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            { type: 'text' as const, text: JSON.stringify(rows, null, 2) },
-          ],
-        };
+        return richResult(summary, rows);
       } catch (err) {
         return handleError(err);
       }
@@ -716,19 +701,7 @@ export function registerAtfTools(
           ),
         ].join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            {
-              type: 'text' as const,
-              text: JSON.stringify(
-                { sys_id: sysId, name, inputs, outputs },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return richResult(summary, { sys_id: sysId, name, inputs, outputs });
       } catch (err) {
         return handleError(err);
       }
@@ -779,12 +752,7 @@ export function registerAtfTools(
           ),
         ].join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            { type: 'text' as const, text: JSON.stringify(rows, null, 2) },
-          ],
-        };
+        return richResult(summary, rows);
       } catch (err) {
         return handleError(err);
       }
@@ -806,8 +774,8 @@ export function registerAtfTools(
     },
     async ({ sys_id }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid test sys_id.`);
+        const err = requireSysId(sys_id, 'test sys_id');
+        if (err) return errText(err);
 
         const test = await client.getRecord<SnRecord>(TEST_TABLE, sys_id);
         const steps = await client.listRecords<SnRecord>(
@@ -867,12 +835,7 @@ export function registerAtfTools(
           ]),
         ].join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            { type: 'text' as const, text: JSON.stringify(result, null, 2) },
-          ],
-        };
+        return richResult(summary, result);
       } catch (err) {
         return handleError(err);
       }
@@ -905,22 +868,17 @@ export function registerAtfTools(
         if (description !== undefined) body.description = description;
         const created = await client.createRecord<SnRecord>(SUITE_TABLE, body);
         const sysId = val(created, 'sys_id');
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Test suite created successfully.',
-                '',
-                `Name:   ${name}`,
-                `sys_id: ${sysId}`,
-                `URL:    ${recordUrl(client, SUITE_TABLE, sysId)}`,
-                '',
-                'Add tests to it with add_atf_test_to_suite.',
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Test suite created successfully.',
+            '',
+            `Name:   ${name}`,
+            `sys_id: ${sysId}`,
+            `URL:    ${recordUrl(client, SUITE_TABLE, sysId)}`,
+            '',
+            'Add tests to it with add_atf_test_to_suite.',
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -947,27 +905,21 @@ export function registerAtfTools(
     },
     async ({ sys_id, name, description, active }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return errText(`"${sys_id}" is not a valid test suite sys_id.`);
-        }
+        const err = requireSysId(sys_id, 'test suite sys_id');
+        if (err) return errText(err);
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
         if (description !== undefined) body.description = description;
         if (active !== undefined) body.active = String(active);
         await client.patchRecord(SUITE_TABLE, sys_id, body);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Test suite updated successfully.',
-                '',
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Test suite updated successfully.',
+            '',
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -1005,22 +957,17 @@ export function registerAtfTools(
           );
         const created = await client.createRecord<SnRecord>(TEST_TABLE, body);
         const sysId = val(created, 'sys_id');
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Test created successfully.',
-                '',
-                `Name:   ${name}`,
-                `sys_id: ${sysId}`,
-                `URL:    ${recordUrl(client, TEST_TABLE, sysId)}`,
-                '',
-                'Add steps with add_atf_step. Save the sys_id — each step needs it.',
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Test created successfully.',
+            '',
+            `Name:   ${name}`,
+            `sys_id: ${sysId}`,
+            `URL:    ${recordUrl(client, TEST_TABLE, sysId)}`,
+            '',
+            'Add steps with add_atf_step. Save the sys_id — each step needs it.',
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -1053,9 +1000,8 @@ export function registerAtfTools(
       enable_parameterized_testing,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return errText(`"${sys_id}" is not a valid test sys_id.`);
-        }
+        const err = requireSysId(sys_id, 'test sys_id');
+        if (err) return errText(err);
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
         if (description !== undefined) body.description = description;
@@ -1065,19 +1011,14 @@ export function registerAtfTools(
             enable_parameterized_testing,
           );
         await client.patchRecord(TEST_TABLE, sys_id, body);
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Test updated successfully.',
-                '',
-                `sys_id:         ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Test updated successfully.',
+            '',
+            `sys_id:         ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -1104,10 +1045,10 @@ export function registerAtfTools(
     },
     async ({ test_suite, test, order }) => {
       try {
-        if (!isSysId(test_suite))
-          return errText(`"${test_suite}" is not a valid test suite sys_id.`);
-        if (!isSysId(test))
-          return errText(`"${test}" is not a valid test sys_id.`);
+        const suiteErr = requireSysId(test_suite, 'test suite sys_id');
+        if (suiteErr) return errText(suiteErr);
+        const testErr = requireSysId(test, 'test sys_id');
+        if (testErr) return errText(testErr);
         const resolvedOrder =
           order ??
           (await nextOrder(
@@ -1120,19 +1061,14 @@ export function registerAtfTools(
           test,
           order: String(resolvedOrder),
         });
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Test added to suite successfully.',
-                '',
-                `Link sys_id: ${val(created, 'sys_id')}`,
-                `Order:       ${resolvedOrder}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Test added to suite successfully.',
+            '',
+            `Link sys_id: ${val(created, 'sys_id')}`,
+            `Order:       ${resolvedOrder}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -1189,8 +1125,8 @@ export function registerAtfTools(
     },
     async ({ test, step_config, order, active, inputs }) => {
       try {
-        if (!isSysId(test))
-          return errText(`"${test}" is not a valid test sys_id.`);
+        const err = requireSysId(test, 'test sys_id');
+        if (err) return errText(err);
 
         const { sysId: configSysId, name: configName } =
           await resolveStepConfig(client, step_config);
@@ -1294,28 +1230,23 @@ export function registerAtfTools(
               ]
             : [];
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Step added successfully.',
-                '',
-                `Test:        ${test}`,
-                `Step config: ${configName}`,
-                `Order:       ${resolvedOrder}`,
-                `Step sys_id: ${stepSysId}`,
-                inputStatus,
-                defaultsLine,
-                ...outputLines,
-                ...assertWarnings,
-                ...schemaLines,
-              ]
-                .filter((l): l is string => l !== undefined)
-                .join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Step added successfully.',
+            '',
+            `Test:        ${test}`,
+            `Step config: ${configName}`,
+            `Order:       ${resolvedOrder}`,
+            `Step sys_id: ${stepSysId}`,
+            inputStatus,
+            defaultsLine,
+            ...outputLines,
+            ...assertWarnings,
+            ...schemaLines,
+          ]
+            .filter((l): l is string => l !== undefined)
+            .join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -1343,8 +1274,8 @@ export function registerAtfTools(
     },
     async ({ sys_id, order, active, inputs }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid step sys_id.`);
+        const err = requireSysId(sys_id, 'step sys_id');
+        if (err) return errText(err);
 
         const step = await client.getRecord<SnRecord>(STEP_TABLE, sys_id, [
           'sys_id',
@@ -1390,31 +1321,19 @@ export function registerAtfTools(
           assertWarnings = buildAssertWarnings(defs, verified.stored);
         }
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Step updated successfully.',
-                '',
-                `Step sys_id:    ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-                inputStatus,
-                ...assertWarnings,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Step updated successfully.',
+            '',
+            `Step sys_id:    ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+            inputStatus,
+            ...assertWarnings,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
     },
   );
-}
-
-function errText(text: string) {
-  return {
-    content: [{ type: 'text' as const, text }],
-    isError: true,
-  };
 }

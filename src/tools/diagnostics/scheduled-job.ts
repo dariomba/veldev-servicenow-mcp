@@ -1,10 +1,14 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import type { SnReference } from '../../types/servicenow.js';
+import type { SnRecord } from '../../types/servicenow.js';
 import {
+  disp,
+  errText,
   handleError,
-  isSysId,
-  resolveDisplay,
-  resolveValue,
+  recordUrl,
+  requireSysId,
+  richResult,
+  textResult,
+  val,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -24,13 +28,6 @@ const SCRIPT_TABLE = 'sysauto_script';
 const REPORT_TABLE = 'sysauto_report';
 const TEMPLATE_TABLE = 'sysauto_template';
 const TRIGGER_TABLE = 'sys_trigger';
-
-type SnRecord = Record<string, SnReference | undefined>;
-
-const val = (r: SnRecord, f: string): string =>
-  r[f] ? resolveValue(r[f] as SnReference) : '';
-const disp = (r: SnRecord, f: string): string =>
-  r[f] ? resolveDisplay(r[f] as SnReference) : '';
 
 const DAY_NAMES = [
   '',
@@ -96,18 +93,6 @@ const JOB_TYPE_TABLE: Record<string, string> = {
   report: REPORT_TABLE,
   record_generation: TEMPLATE_TABLE,
 };
-
-function recordUrl(
-  client: ServiceNowClient,
-  table: string,
-  sysId: string,
-): string {
-  return `${client.getInstanceUrl()}/${table}.do?sys_id=${sysId}`;
-}
-
-function errText(text: string) {
-  return { content: [{ type: 'text' as const, text }], isError: true };
-}
 
 /** Common scheduling input shared by every job type's create/update schema. */
 interface ScheduleInput {
@@ -392,8 +377,8 @@ export function registerScheduledJobTools(
     },
     async ({ sys_id, name, script, ...schedule }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid sysauto_script sys_id.`);
+        const err = requireSysId(sys_id, 'sysauto_script sys_id');
+        if (err) return errText(err);
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
         if (script !== undefined) body.script = script;
@@ -470,8 +455,8 @@ export function registerScheduledJobTools(
     },
     async ({ sys_id, name, ...rest }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid sysauto_report sys_id.`);
+        const err = requireSysId(sys_id, 'sysauto_report sys_id');
+        if (err) return errText(err);
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
         applyReportFields(body, rest);
@@ -557,8 +542,8 @@ export function registerScheduledJobTools(
     },
     async ({ sys_id, name, template, ...schedule }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid sysauto_template sys_id.`);
+        const err = requireSysId(sys_id, 'sysauto_template sys_id');
+        if (err) return errText(err);
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
         if (template !== undefined) body.template = template;
@@ -616,7 +601,7 @@ export function registerScheduledJobTools(
               .join('\n')
           : 'No scheduled jobs matched.';
 
-        return { content: [{ type: 'text' as const, text: summary }] };
+        return textResult(summary);
       } catch (err) {
         return handleError(err);
       }
@@ -638,8 +623,8 @@ export function registerScheduledJobTools(
     },
     async ({ sys_id }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid scheduled job sys_id.`);
+        const err = requireSysId(sys_id, 'scheduled job sys_id');
+        if (err) return errText(err);
 
         const base = await client.getRecord<SnRecord>(BASE_TABLE, sys_id, [
           'sys_id',
@@ -723,12 +708,7 @@ export function registerScheduledJobTools(
           .filter(Boolean)
           .join('\n');
 
-        return {
-          content: [
-            { type: 'text' as const, text: summary },
-            { type: 'text' as const, text: JSON.stringify(result, null, 2) },
-          ],
-        };
+        return richResult(summary, result);
       } catch (err) {
         return handleError(err);
       }
@@ -757,8 +737,8 @@ export function registerScheduledJobTools(
     },
     async ({ sys_id }) => {
       try {
-        if (!isSysId(sys_id))
-          return errText(`"${sys_id}" is not a valid scheduled job sys_id.`);
+        const err = requireSysId(sys_id, 'scheduled job sys_id');
+        if (err) return errText(err);
 
         const runnerScript = [
           `var gr = new GlideRecord('${BASE_TABLE}');`,
@@ -770,21 +750,16 @@ export function registerScheduledJobTools(
         const result =
           await client.executeBackgroundScriptTrigger(runnerScript);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Scheduled job execution requested.',
-                '',
-                `job_sys_id:     ${sys_id}`,
-                `trigger_sys_id: ${result.trigger_sys_id}`,
-                `trigger_name:   ${result.trigger_name}`,
-                `next_action:    ${result.next_action}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Scheduled job execution requested.',
+            '',
+            `job_sys_id:     ${sys_id}`,
+            `trigger_sys_id: ${result.trigger_sys_id}`,
+            `trigger_name:   ${result.trigger_name}`,
+            `next_action:    ${result.next_action}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -795,17 +770,12 @@ export function registerScheduledJobTools(
 // ── Shared result builders ──────────────────────────────────────────────────
 
 function skipped(label: string, name: string, existing: SnRecord) {
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: [
-          `${label} "${name}" already exists — skipped.`,
-          `sys_id: ${val(existing, 'sys_id')}`,
-        ].join('\n'),
-      },
-    ],
-  };
+  return textResult(
+    [
+      `${label} "${name}" already exists — skipped.`,
+      `sys_id: ${val(existing, 'sys_id')}`,
+    ].join('\n'),
+  );
 }
 
 function created(
@@ -815,21 +785,16 @@ function created(
   rec: SnRecord,
 ) {
   const sysId = val(rec, 'sys_id');
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: [
-          `${label} created.`,
-          '',
-          `name:   ${disp(rec, 'name')}`,
-          `sys_id: ${sysId}`,
-          `schedule: ${scheduleSummary(rec)}`,
-          `URL:    ${recordUrl(client, table, sysId)}`,
-        ].join('\n'),
-      },
-    ],
-  };
+  return textResult(
+    [
+      `${label} created.`,
+      '',
+      `name:   ${disp(rec, 'name')}`,
+      `sys_id: ${sysId}`,
+      `schedule: ${scheduleSummary(rec)}`,
+      `URL:    ${recordUrl(client, table, sysId)}`,
+    ].join('\n'),
+  );
 }
 
 async function updated(
@@ -839,28 +804,16 @@ async function updated(
   body: Record<string, unknown>,
 ) {
   if (Object.keys(body).length === 0) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: 'No fields to update — all values were omitted.',
-        },
-      ],
-    };
+    return textResult('No fields to update — all values were omitted.');
   }
   await client.patchRecord<unknown>(table, sysId, body);
-  return {
-    content: [
-      {
-        type: 'text' as const,
-        text: [
-          'Scheduled job updated successfully.',
-          '',
-          `sys_id:         ${sysId}`,
-          `Updated fields: ${Object.keys(body).join(', ')}`,
-          `URL:            ${recordUrl(client, table, sysId)}`,
-        ].join('\n'),
-      },
-    ],
-  };
+  return textResult(
+    [
+      'Scheduled job updated successfully.',
+      '',
+      `sys_id:         ${sysId}`,
+      `Updated fields: ${Object.keys(body).join(', ')}`,
+      `URL:            ${recordUrl(client, table, sysId)}`,
+    ].join('\n'),
+  );
 }

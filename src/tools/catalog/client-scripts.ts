@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
   CatalogClientScriptCreate,
@@ -59,29 +65,14 @@ export function registerCatalogClientScriptTools(
     },
     async ({ catalog_item_sys_id, scripts }) => {
       try {
-        if (!isSysId(catalog_item_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item_sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(catalog_item_sys_id, 'catalog item sys_id');
+        if (err) return errText(err);
 
         for (const s of scripts) {
           if (s.type === 'onChange' && !s.cat_variable) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `cat_variable is required for onChange script "${s.name}".`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(
+              `cat_variable is required for onChange script "${s.name}".`,
+            );
           }
         }
 
@@ -191,9 +182,7 @@ for (var i = 0; i < links.length; i++) {
           }
         }
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -229,17 +218,8 @@ for (var i = 0; i < links.length; i++) {
       order,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid catalog client script sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'catalog client script sys_id');
+        if (err) return errText(err);
 
         const body: Record<string, unknown> = {};
         if (name !== undefined) body.name = name;
@@ -265,19 +245,14 @@ if (gr.get('${sys_id}')) {
           await client.executeBackgroundScriptTrigger(bgScript);
         }
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Catalog client script updated successfully.`,
-                ``,
-                `sys_id: ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Catalog client script updated successfully.`,
+            ``,
+            `sys_id: ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

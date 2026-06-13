@@ -1,5 +1,5 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import { handleError, isSysId } from '../helpers.js';
+import { errText, handleError, isSysId, textResult } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { FireEvent } from './schemas.js';
 
@@ -35,26 +35,12 @@ export function registerFireEventTools(
         const hasTable = record_table !== undefined;
         const hasSysId = record_sys_id !== undefined;
         if (hasTable !== hasSysId) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'record_table and record_sys_id must be provided together (or both omitted).',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'record_table and record_sys_id must be provided together (or both omitted).',
+          );
         }
         if (hasSysId && !isSysId(record_sys_id as string)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${record_sys_id}" is not a valid record sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(`"${record_sys_id}" is not a valid record sys_id.`);
         }
 
         // JSON.stringify yields a safe JS string literal for each interpolated value.
@@ -72,23 +58,18 @@ export function registerFireEventTools(
 
         const result = await client.executeBackgroundScriptTrigger(script);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                'Event fire requested.',
-                '',
-                `event_name:     ${event_name}`,
-                `record:         ${hasTable ? `${record_table}/${record_sys_id}` : '(none)'}`,
-                `parm1:          ${parm1 ?? ''}`,
-                `parm2:          ${parm2 ?? ''}`,
-                `trigger_sys_id: ${result.trigger_sys_id}`,
-                `next_action:    ${result.next_action}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            'Event fire requested.',
+            '',
+            `event_name:     ${event_name}`,
+            `record:         ${hasTable ? `${record_table}/${record_sys_id}` : '(none)'}`,
+            `parm1:          ${parm1 ?? ''}`,
+            `parm2:          ${parm2 ?? ''}`,
+            `trigger_sys_id: ${result.trigger_sys_id}`,
+            `next_action:    ${result.next_action}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

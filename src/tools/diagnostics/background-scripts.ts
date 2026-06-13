@@ -1,5 +1,5 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
-import { handleError } from '../helpers.js';
+import { handleError, textResult } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import { BackgroundScriptExecute } from './schemas.js';
 
@@ -33,20 +33,15 @@ export function registerBackgroundScriptTools(
       try {
         const result = await client.executeBackgroundScriptTrigger(script);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Background script scheduled successfully.`,
-                ``,
-                `trigger_sys_id: ${result.trigger_sys_id}`,
-                `trigger_name:   ${result.trigger_name}`,
-                `next_action:    ${result.next_action}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Background script scheduled successfully.`,
+            ``,
+            `trigger_sys_id: ${result.trigger_sys_id}`,
+            `trigger_name:   ${result.trigger_name}`,
+            `next_action:    ${result.next_action}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

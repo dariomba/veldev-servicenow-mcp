@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import { type ServiceNowClient, SnApiError } from '../../clients/servicenow.js';
 import type { SnReference } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  isSysId,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 
 export const TRANSLATION_CONFIG = {
@@ -207,14 +214,9 @@ export function registerCatalogTranslationTools(
     async ({ catalog_item_sys_id, translations }) => {
       try {
         if (!TRANSLATION_CONFIG.enabled) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Translation is disabled in TRANSLATION_CONFIG — skipped.',
-              },
-            ],
-          };
+          return textResult(
+            'Translation is disabled in TRANSLATION_CONFIG — skipped.',
+          );
         }
 
         const activeLanguageRecords = await client.listRecords<{
@@ -224,17 +226,8 @@ export function registerCatalogTranslationTools(
           .map((r) => r.id.value)
           .filter(Boolean);
 
-        if (!isSysId(catalog_item_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item_sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(catalog_item_sys_id, 'catalog item sys_id');
+        if (err) return errText(err);
 
         // Pre-fetch base field values for variables that use sys_translated.
         // sys_translated.value must be the current base-language field value (e.g. "Device Type"),
@@ -308,17 +301,10 @@ export function registerCatalogTranslationTools(
 
               // Validate sys_id
               if (!isSysId(varSysId)) {
-                return {
-                  content: [
-                    {
-                      type: 'text' as const,
-                      text:
-                        `Variable translation skipped: sys_id "${varSysId}" is not valid. ` +
-                        `Ensure batch_create_catalog_variables has completed and sys_ids are passed correctly.`,
-                    },
-                  ],
-                  isError: true,
-                };
+                return errText(
+                  `Variable translation skipped: sys_id "${varSysId}" is not valid. ` +
+                    `Ensure batch_create_catalog_variables has completed and sys_ids are passed correctly.`,
+                );
               }
 
               const varBaseRecord = varBaseFieldValues.get(varSysId);
@@ -385,19 +371,12 @@ export function registerCatalogTranslationTools(
             ? '\n\nLikely cause: the target language is not installed in this ServiceNow instance, ' +
               'Check System Definition → Languages and confirm the language is active.'
             : '';
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  `Translation partially failed: ${succeeded}/${results.length} record(s) written, ` +
-                  `${failures.length} failed.\n\n` +
-                  `First error: ${first instanceof Error ? first.message : String(first)}` +
-                  hint,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `Translation partially failed: ${succeeded}/${results.length} record(s) written, ` +
+              `${failures.length} failed.\n\n` +
+              `First error: ${first instanceof Error ? first.message : String(first)}` +
+              hint,
+          );
         }
 
         const langLines = Object.entries(translations).map(([lang, data]) => {
@@ -419,22 +398,17 @@ export function registerCatalogTranslationTools(
           return `  ${lang}: ${itemCount} item field(s), ${varFieldCount} variable field(s), ${choiceCount} choice(s)`;
         });
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Catalog item translations written.`,
-                ``,
-                `Catalog item:     ${catalog_item_sys_id}`,
-                `Languages written: ${Object.keys(translations).join(', ')}`,
-                `Active languages:  ${activeLanguages.join(', ')}`,
-                ``,
-                ...langLines,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Catalog item translations written.`,
+            ``,
+            `Catalog item:     ${catalog_item_sys_id}`,
+            `Languages written: ${Object.keys(translations).join(', ')}`,
+            `Active languages:  ${activeLanguages.join(', ')}`,
+            ``,
+            ...langLines,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }

@@ -10,6 +10,8 @@ import {
   isSysId,
   resolveDisplay,
   resolveValue,
+  richResult,
+  textResult,
 } from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
@@ -177,9 +179,7 @@ export function registerUpdateSetTools(
         const username = client.getUsername();
 
         if (!username) {
-          return {
-            content: [{ type: 'text' as const, text: NO_NAMED_USER_MESSAGE }],
-          };
+          return textResult(NO_NAMED_USER_MESSAGE);
         }
 
         const prefs = await client.listRecords<RawUserPreference>(
@@ -190,14 +190,9 @@ export function registerUpdateSetTools(
         );
 
         if (prefs.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No active Update Set preference found. The default Update Set for each scope is active.',
-              },
-            ],
-          };
+          return textResult(
+            'No active Update Set preference found. The default Update Set for each scope is active.',
+          );
         }
 
         const updateSetSysId = resolveValue(prefs[0].value);
@@ -212,14 +207,9 @@ export function registerUpdateSetTools(
         const application = resolveDisplay(updateSet.application);
         const applicationSysId = resolveValue(updateSet.application);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `Name: ${name}\nApplication: ${application} (${applicationSysId})`,
-            },
-          ],
-        };
+        return textResult(
+          `Name: ${name}\nApplication: ${application} (${applicationSysId})`,
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -269,14 +259,7 @@ export function registerUpdateSetTools(
         );
 
         if (records.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'No update sets match the given filters.',
-              },
-            ],
-          };
+          return textResult('No update sets match the given filters.');
         }
 
         const summary = records
@@ -290,15 +273,10 @@ export function registerUpdateSetTools(
           })
           .join('\n');
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: `${records.length} update set(s):\n${summary}`,
-            },
-            { type: 'text' as const, text: JSON.stringify(records, null, 2) },
-          ],
-        };
+        return richResult(
+          `${records.length} update set(s):\n${summary}`,
+          records,
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -373,9 +351,7 @@ export function registerUpdateSetTools(
 
         lines.push('', UI_PICKER_REMINDER);
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -410,9 +386,7 @@ export function registerUpdateSetTools(
       try {
         const username = client.getUsername();
         if (!username) {
-          return {
-            content: [{ type: 'text' as const, text: NO_NAMED_USER_MESSAGE }],
-          };
+          return textResult(NO_NAMED_USER_MESSAGE);
         }
 
         const { sysId, name } = await resolveUpdateSet(client, update_set);
@@ -429,9 +403,7 @@ export function registerUpdateSetTools(
         );
         lines.push('', UI_PICKER_REMINDER);
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }

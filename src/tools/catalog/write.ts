@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import { type SnReference, VARIABLE_TYPE_MAP } from '../../types/servicenow.js';
-import { handleError, isSysId, resolveValue } from '../helpers.js';
+import {
+  errText,
+  handleError,
+  isSysId,
+  requireSysId,
+  resolveValue,
+  textResult,
+} from '../helpers.js';
 import type { ToolRegistrar } from '../registry.js';
 import {
   CatalogItemCreate,
@@ -50,39 +57,20 @@ export function registerCatalogWriteTools(
     }) => {
       try {
         if (catalog_sys_id && !isSysId(catalog_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_sys_id}" is not a valid sys_id (must be 32 hex chars).`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${catalog_sys_id}" is not a valid sys_id (must be 32 hex chars).`,
+          );
         }
         if (category_sys_id && !isSysId(category_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text:
-                  `"${category_sys_id}" is not a valid category sys_id. ` +
-                  `Call list_catalog_categories to find the sys_id for that category name.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${category_sys_id}" is not a valid category sys_id. ` +
+              `Call list_catalog_categories to find the sys_id for that category name.`,
+          );
         }
         if (flow_designer_flow !== undefined && workflow !== undefined) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide either flow_designer_flow or workflow, not both.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide either flow_designer_flow or workflow, not both.',
+          );
         }
 
         const body: Record<string, unknown> = {
@@ -108,22 +96,17 @@ export function registerCatalogWriteTools(
 
         const sysId = resolveValue(created.sys_id);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Catalog item created successfully.`,
-                ``,
-                `Name:   ${name}`,
-                `sys_id: ${sysId}`,
-                ``,
-                `Save the sys_id above — you will need it to add variables, UI policies,`,
-                `client scripts, or user criteria to this item.`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Catalog item created successfully.`,
+            ``,
+            `Name:   ${name}`,
+            `sys_id: ${sysId}`,
+            ``,
+            `Save the sys_id above — you will need it to add variables, UI policies,`,
+            `client scripts, or user criteria to this item.`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -170,28 +153,13 @@ export function registerCatalogWriteTools(
     },
     async ({ catalog_item_sys_id, variable_set_sys_id, order }) => {
       try {
-        if (!isSysId(catalog_item_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item_sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
-        if (!isSysId(variable_set_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${variable_set_sys_id}" is not a valid variable set sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const itemErr = requireSysId(
+          catalog_item_sys_id,
+          'catalog item sys_id',
+        );
+        if (itemErr) return errText(itemErr);
+        const setErr = requireSysId(variable_set_sys_id, 'variable set sys_id');
+        if (setErr) return errText(setErr);
 
         const existing = await client.listRecords<{ sys_id: SnReference }>(
           'io_set_item',
@@ -200,18 +168,13 @@ export function registerCatalogWriteTools(
           1,
         );
         if (existing.length > 0) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: [
-                  `Variable set is already associated with this catalog item — no change made.`,
-                  ``,
-                  `io_set_item sys_id: ${resolveValue(existing[0].sys_id)}`,
-                ].join('\n'),
-              },
-            ],
-          };
+          return textResult(
+            [
+              `Variable set is already associated with this catalog item — no change made.`,
+              ``,
+              `io_set_item sys_id: ${resolveValue(existing[0].sys_id)}`,
+            ].join('\n'),
+          );
         }
 
         const created = await client.createRecord<{ sys_id: SnReference }>(
@@ -223,18 +186,13 @@ export function registerCatalogWriteTools(
           },
         );
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Variable set associated successfully.`,
-                ``,
-                `io_set_item sys_id: ${resolveValue(created.sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Variable set associated successfully.`,
+            ``,
+            `io_set_item sys_id: ${resolveValue(created.sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -274,17 +232,8 @@ export function registerCatalogWriteTools(
     },
     async ({ catalog_item_sys_id, variables }) => {
       try {
-        if (!isSysId(catalog_item_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item_sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(catalog_item_sys_id, 'catalog item sys_id');
+        if (err) return errText(err);
 
         // Parallel idempotency checks for all variables
         const existingChecks = await Promise.all(
@@ -441,9 +390,7 @@ export function registerCatalogWriteTools(
           }
         }
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -485,49 +432,20 @@ export function registerCatalogWriteTools(
       request_method,
     }) => {
       try {
-        if (!isSysId(sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const err = requireSysId(sys_id, 'catalog item sys_id');
+        if (err) return errText(err);
         if (catalog_sys_id !== undefined && !isSysId(catalog_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_sys_id}" is not a valid catalog sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(`"${catalog_sys_id}" is not a valid catalog sys_id.`);
         }
         if (category_sys_id !== undefined && !isSysId(category_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${category_sys_id}" is not a valid category sys_id. Call list_catalog_categories to find the sys_id.`,
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            `"${category_sys_id}" is not a valid category sys_id. Call list_catalog_categories to find the sys_id.`,
+          );
         }
         if (flow_designer_flow !== undefined && workflow !== undefined) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: 'Provide either flow_designer_flow or workflow, not both.',
-              },
-            ],
-            isError: true,
-          };
+          return errText(
+            'Provide either flow_designer_flow or workflow, not both.',
+          );
         }
 
         const body: Record<string, unknown> = {};
@@ -547,19 +465,14 @@ export function registerCatalogWriteTools(
 
         await client.patchRecord<unknown>('sc_cat_item', sys_id, body);
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `Catalog item updated successfully.`,
-                ``,
-                `sys_id: ${sys_id}`,
-                `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `Catalog item updated successfully.`,
+            ``,
+            `sys_id: ${sys_id}`,
+            `Updated fields: ${Object.keys(body).join(', ') || 'none'}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
@@ -600,15 +513,7 @@ export function registerCatalogWriteTools(
       try {
         for (const v of variables) {
           if (!isSysId(v.sys_id)) {
-            return {
-              content: [
-                {
-                  type: 'text' as const,
-                  text: `"${v.sys_id}" is not a valid variable sys_id.`,
-                },
-              ],
-              isError: true,
-            };
+            return errText(`"${v.sys_id}" is not a valid variable sys_id.`);
           }
         }
 
@@ -731,9 +636,7 @@ export function registerCatalogWriteTools(
           lines.push(`  sys_id: ${v.sys_id}${typeLabel}${choiceNote}`);
         }
 
-        return {
-          content: [{ type: 'text' as const, text: lines.join('\n') }],
-        };
+        return textResult(lines.join('\n'));
       } catch (err) {
         return handleError(err);
       }
@@ -787,28 +690,16 @@ export function registerCatalogWriteTools(
     },
     async ({ catalog_item_sys_id, user_criteria_sys_id, restriction_type }) => {
       try {
-        if (!isSysId(catalog_item_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${catalog_item_sys_id}" is not a valid catalog item sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
-        if (!isSysId(user_criteria_sys_id)) {
-          return {
-            content: [
-              {
-                type: 'text' as const,
-                text: `"${user_criteria_sys_id}" is not a valid user criteria sys_id.`,
-              },
-            ],
-            isError: true,
-          };
-        }
+        const itemErr = requireSysId(
+          catalog_item_sys_id,
+          'catalog item sys_id',
+        );
+        if (itemErr) return errText(itemErr);
+        const criteriaErr = requireSysId(
+          user_criteria_sys_id,
+          'user criteria sys_id',
+        );
+        if (criteriaErr) return errText(criteriaErr);
 
         const table =
           restriction_type === 'available_for'
@@ -828,21 +719,16 @@ export function registerCatalogWriteTools(
             ? 'Available For'
             : 'Not Available For';
 
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: [
-                `User criteria attached successfully.`,
-                ``,
-                `Catalog item:   ${catalog_item_sys_id}`,
-                `User criteria:  ${user_criteria_sys_id}`,
-                `Restriction:    ${label}`,
-                `Junction sys_id: ${resolveValue(created.sys_id)}`,
-              ].join('\n'),
-            },
-          ],
-        };
+        return textResult(
+          [
+            `User criteria attached successfully.`,
+            ``,
+            `Catalog item:   ${catalog_item_sys_id}`,
+            `User criteria:  ${user_criteria_sys_id}`,
+            `Restriction:    ${label}`,
+            `Junction sys_id: ${resolveValue(created.sys_id)}`,
+          ].join('\n'),
+        );
       } catch (err) {
         return handleError(err);
       }
