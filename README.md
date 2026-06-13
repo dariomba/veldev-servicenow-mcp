@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-62 tools across 13 domains:
+73 tools across 14 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -27,6 +27,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
 | **Scheduled jobs** | Create, update, list, get, and run-now scheduled jobs (`sysauto`) — script executions, scheduled emails of reports, and template-based record generation |
+| **Events** | Register events (`sysevent_register`), create custom processing queues (`sysevent_queue`) and script actions (`sysevent_script_action`), fire events at runtime via `gs.eventQueue()`, and list/get any of them |
 | **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 | **ATF (Automated Test Framework)** | Create tests and suites, add and configure steps with cross-step output mapping, browse step configs and their input/output schemas |
 
@@ -224,6 +225,8 @@ Create a fix script called "Backfill Incident SLAs" that queries all incidents m
 
 Run the fix script with sys_id 18f9eee1c3d1479043e1fc0d0501315e
 
+Register an event "x_acme.contract.signed" on a custom queue, then create a script action that emails the account owner when it fires
+
 Create an update set called "VPN Catalog Work" and make it my current set
 
 List my in-progress update sets, then switch to "VPN Catalog Work"
@@ -308,7 +311,7 @@ For production self-hosting:
 In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
 
 - **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
-- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `records`, `scripts`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `events`, `records`, `scripts`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 
