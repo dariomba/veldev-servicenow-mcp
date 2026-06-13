@@ -11,12 +11,12 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-65 tools across 13 domains:
+60 tools across 13 domains:
 
 | Domain | What it covers |
 |---|---|
 | **Catalog (read)** | Browse items, get full definitions with variables, UI policies, client scripts, user criteria, variable sets |
-| **Catalog (write)** | Create items, add/update variables, manage variable sets |
+| **Catalog (write)** | Create items, add/update variables, manage variable sets, attach user criteria |
 | **Record producers** | Create and update record producers (catalog forms that generate records in any table) |
 | **UI policies** | Create and update catalog UI policies and their actions |
 | **Client scripts** | Create and manage catalog client scripts |
@@ -147,6 +147,7 @@ Copy `.env.example` to `.env` to configure.
 | `ALLOWED_ORIGIN` | ❌ | `*` in dev | CORS origin for HTTP transport |
 | `ACCESS_ENFORCEMENT` | ❌ | `off` | `on` or `off`. Gateway mode only: when `on`, write tools require the access header with value `write` on each request (default-deny). Env/stdio servers always behave as write. |
 | `ACCESS_HEADER` | ❌ | `x-mcp-access` | Header carrying the per-request access value (`write` grants write; anything else is read) |
+| `TOOLSETS_HEADER` | ❌ | `x-mcp-toolsets` | Header naming the toolsets a new session registers (gateway mode only) — see [Gateway headers](#gateway-headers) |
 
 ¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
 ² Required when `SN_AUTH_TYPE=oauth`
@@ -298,6 +299,13 @@ For production self-hosting:
 - Run behind a reverse proxy (nginx, Caddy, Railway, Fly.io)
 - Use `TRANSPORT=http` (default) for remote deployments
 - Health check: `GET /health`
+
+### Gateway headers
+
+In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
+
+- **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `records`, `scripts`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 

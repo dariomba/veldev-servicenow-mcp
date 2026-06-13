@@ -11,82 +11,265 @@ import { buildServer } from '../server.js';
 import { buildTestPair, firstText } from '../tests/helpers.js';
 import {
   deriveEnforcement,
+  parseAllowedToolsets,
   type ToolAccess,
   ToolRegistry,
   type ToolRegistryOptions,
 } from './registry.js';
 
-describe('tool access classification', () => {
-  it('classifies every registered tool as read or write', () => {
+describe('tool inventory', () => {
+  it('classifies every registered tool with access and toolset group', () => {
     // Registration never calls ServiceNow — the client is only captured in
     // handler closures — so an empty stub is enough to build the server.
+    // No allowed-set → all toolsets register, so this is the full inventory.
     const { registry } = buildServer({} as ServiceNowClient);
 
-    // Security-relevant: a tool classified 'read' here will be callable
-    // without write access once per-request enforcement lands. Any change
-    // to this snapshot must be reviewed with that in mind.
-    expect(registry.accessMap()).toMatchInlineSnapshot(`
+    // Security-relevant: a tool classified 'read' here is callable without
+    // write access under per-request enforcement. Any change to this
+    // snapshot must be reviewed with that in mind. (Groups are UX scoping
+    // only.)
+    expect(registry.inventory()).toMatchInlineSnapshot(`
       {
-        "add_atf_step": "write",
-        "add_atf_test_to_suite": "write",
-        "associate_variable_set": "write",
-        "attach_user_criteria": "write",
-        "batch_create_catalog_client_scripts": "write",
-        "batch_create_catalog_variables": "write",
-        "batch_create_ui_policies": "write",
-        "batch_create_ui_policy_actions": "write",
-        "batch_update_catalog_variables": "write",
-        "create_atf_test": "write",
-        "create_atf_test_suite": "write",
-        "create_business_rule": "write",
-        "create_catalog_item": "write",
-        "create_fix_script": "write",
-        "create_record": "write",
-        "create_record_producer": "write",
-        "create_scheduled_record_generation": "write",
-        "create_scheduled_report": "write",
-        "create_scheduled_script": "write",
-        "create_script_include": "write",
-        "create_update_set": "write",
-        "execute_background_script": "write",
-        "find_reusable_variables": "read",
-        "find_user_criteria": "read",
-        "get_atf_step_config_schema": "read",
-        "get_atf_test": "read",
-        "get_catalog_item_definition": "read",
-        "get_current_update_set": "read",
-        "get_record": "read",
-        "get_scheduled_job": "read",
-        "list_atf_step_configs": "read",
-        "list_atf_tests": "read",
-        "list_catalog_categories": "read",
-        "list_catalog_items": "read",
-        "list_catalogs": "read",
-        "list_flows": "read",
-        "list_scheduled_jobs": "read",
-        "list_update_sets": "read",
-        "list_variable_set_variables": "read",
-        "list_workflows": "read",
-        "query_records": "read",
-        "resolve_table": "read",
-        "run_fix_script": "write",
-        "run_scheduled_job": "write",
-        "set_current_update_set": "write",
-        "update_atf_step": "write",
-        "update_atf_test": "write",
-        "update_atf_test_suite": "write",
-        "update_business_rule": "write",
-        "update_catalog_client_script": "write",
-        "update_catalog_item": "write",
-        "update_fix_script": "write",
-        "update_record": "write",
-        "update_record_producer": "write",
-        "update_scheduled_record_generation": "write",
-        "update_scheduled_report": "write",
-        "update_scheduled_script": "write",
-        "update_script_include": "write",
-        "update_ui_policy": "write",
-        "update_ui_policy_action": "write",
+        "add_atf_step": {
+          "access": "write",
+          "group": "atf",
+        },
+        "add_atf_test_to_suite": {
+          "access": "write",
+          "group": "atf",
+        },
+        "associate_variable_set": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "attach_user_criteria": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "batch_create_catalog_client_scripts": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "batch_create_catalog_variables": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "batch_create_ui_policies": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "batch_create_ui_policy_actions": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "batch_update_catalog_variables": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "create_atf_test": {
+          "access": "write",
+          "group": "atf",
+        },
+        "create_atf_test_suite": {
+          "access": "write",
+          "group": "atf",
+        },
+        "create_business_rule": {
+          "access": "write",
+          "group": "scripts",
+        },
+        "create_catalog_item": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "create_fix_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_record": {
+          "access": "write",
+          "group": "records",
+        },
+        "create_record_producer": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "create_scheduled_record_generation": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_scheduled_report": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_scheduled_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_script_include": {
+          "access": "write",
+          "group": "scripts",
+        },
+        "create_update_set": {
+          "access": "write",
+          "group": "update-sets",
+        },
+        "execute_background_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "find_reusable_variables": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "find_user_criteria": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "get_atf_step_config_schema": {
+          "access": "read",
+          "group": "atf",
+        },
+        "get_atf_test": {
+          "access": "read",
+          "group": "atf",
+        },
+        "get_catalog_item_definition": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "get_current_update_set": {
+          "access": "read",
+          "group": "update-sets",
+        },
+        "get_record": {
+          "access": "read",
+          "group": "records",
+        },
+        "get_scheduled_job": {
+          "access": "read",
+          "group": "diagnostics",
+        },
+        "list_atf_step_configs": {
+          "access": "read",
+          "group": "atf",
+        },
+        "list_atf_tests": {
+          "access": "read",
+          "group": "atf",
+        },
+        "list_catalog_categories": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "list_catalog_items": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "list_catalogs": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "list_flows": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "list_scheduled_jobs": {
+          "access": "read",
+          "group": "diagnostics",
+        },
+        "list_update_sets": {
+          "access": "read",
+          "group": "update-sets",
+        },
+        "list_variable_set_variables": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "list_workflows": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "query_records": {
+          "access": "read",
+          "group": "records",
+        },
+        "resolve_table": {
+          "access": "read",
+          "group": "catalog",
+        },
+        "run_fix_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "run_scheduled_job": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "set_current_update_set": {
+          "access": "write",
+          "group": "update-sets",
+        },
+        "update_atf_step": {
+          "access": "write",
+          "group": "atf",
+        },
+        "update_atf_test": {
+          "access": "write",
+          "group": "atf",
+        },
+        "update_atf_test_suite": {
+          "access": "write",
+          "group": "atf",
+        },
+        "update_business_rule": {
+          "access": "write",
+          "group": "scripts",
+        },
+        "update_catalog_client_script": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "update_catalog_item": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "update_fix_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_record": {
+          "access": "write",
+          "group": "records",
+        },
+        "update_record_producer": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "update_scheduled_record_generation": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_scheduled_report": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_scheduled_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_script_include": {
+          "access": "write",
+          "group": "scripts",
+        },
+        "update_ui_policy": {
+          "access": "write",
+          "group": "catalog",
+        },
+        "update_ui_policy_action": {
+          "access": "write",
+          "group": "catalog",
+        },
       }
     `);
   });
@@ -143,6 +326,108 @@ describe('ToolRegistry', () => {
     expect(firstText(result)).toBe('hello');
 
     await teardown();
+  });
+});
+
+describe('toolset scoping', () => {
+  function stubServer(registered: string[]): McpServer {
+    return {
+      registerTool: (name: string) => {
+        registered.push(name);
+        return {} as RegisteredTool;
+      },
+    } as unknown as McpServer;
+  }
+
+  const noop = async () => ({
+    content: [{ type: 'text' as const, text: 'ok' }],
+  });
+
+  it('scoped view stamps its toolset on every tool it registers', () => {
+    const registry = new ToolRegistry(stubServer([]), { enforcement: 'off' });
+    registry.scoped('catalog').registerTool('a', { access: 'read' }, noop);
+    registry.scoped('records').registerTool('b', { access: 'write' }, noop);
+
+    expect(registry.inventory()).toEqual({
+      a: { access: 'read', group: 'catalog' },
+      b: { access: 'write', group: 'records' },
+    });
+  });
+
+  it('skips registration for toolsets outside the allowed-set', () => {
+    const registered: string[] = [];
+    const registry = new ToolRegistry(stubServer(registered), {
+      enforcement: 'off',
+      allowedToolsets: new Set(['records']),
+    });
+    registry.scoped('catalog').registerTool('a', { access: 'read' }, noop);
+    registry.scoped('records').registerTool('b', { access: 'write' }, noop);
+
+    expect(registered).toEqual(['b']);
+    expect(registry.inventory()).toEqual({
+      b: { access: 'write', group: 'records' },
+    });
+  });
+
+  it('no allowed-set means every toolset registers', () => {
+    const registered: string[] = [];
+    const registry = new ToolRegistry(stubServer(registered), {
+      enforcement: 'off',
+    });
+    registry.scoped('atf').registerTool('a', { access: 'read' }, noop);
+    registry.scoped('update-sets').registerTool('b', { access: 'read' }, noop);
+
+    expect(registered).toEqual(['a', 'b']);
+  });
+
+  it('buildServer with an allowed-set exposes exactly that subset of the full inventory', async () => {
+    const full = buildServer({} as ServiceNowClient).registry.inventory();
+    const expected = Object.keys(full).filter(
+      (name) => full[name].group === 'records',
+    );
+    expect(expected.length).toBeGreaterThan(0);
+
+    const { server } = buildServer({} as ServiceNowClient, {
+      enforcement: 'off',
+      allowedToolsets: new Set(['records']),
+    });
+    const [serverTransport, clientTransport] =
+      InMemoryTransport.createLinkedPair();
+    const mcpClient = new Client({ name: 'test-client', version: '1.0.0' });
+    await server.connect(serverTransport);
+    await mcpClient.connect(clientTransport);
+
+    const { tools } = await mcpClient.listTools();
+    expect(tools.map((t) => t.name).sort()).toEqual(expected.sort());
+    await mcpClient.close();
+  });
+});
+
+describe('parseAllowedToolsets', () => {
+  it('absent header → undefined (all toolsets)', () => {
+    expect(parseAllowedToolsets(undefined)).toBeUndefined();
+  });
+
+  it('valid subset, trimmed and case-insensitive', () => {
+    expect(parseAllowedToolsets(' Catalog , SCRIPTS ')).toEqual(
+      new Set(['catalog', 'scripts']),
+    );
+  });
+
+  it('unknown names are dropped, known ones kept', () => {
+    expect(parseAllowedToolsets('catalog,bogus')).toEqual(new Set(['catalog']));
+  });
+
+  it('fail-open: empty or all-unknown header → undefined (all toolsets)', () => {
+    expect(parseAllowedToolsets('')).toBeUndefined();
+    expect(parseAllowedToolsets(' , ')).toBeUndefined();
+    expect(parseAllowedToolsets('bogus,nope')).toBeUndefined();
+  });
+
+  it('joins repeated headers (string array) before parsing', () => {
+    expect(parseAllowedToolsets(['catalog', 'records,atf'])).toEqual(
+      new Set(['catalog', 'records', 'atf']),
+    );
   });
 });
 

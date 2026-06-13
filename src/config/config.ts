@@ -78,4 +78,5 @@ export const config = {
   accessEnforcement: rawEnforcement as 'on' | 'off',
   // Node lowercases incoming header names; keep the lookup key consistent.
   accessHeader: optional('ACCESS_HEADER', 'x-mcp-access').toLowerCase(),
+  toolsetsHeader: optional('TOOLSETS_HEADER', 'x-mcp-toolsets').toLowerCase(),
 };

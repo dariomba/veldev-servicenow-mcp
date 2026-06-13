@@ -40,7 +40,7 @@ npm run lint       # Biome
 
 ## Adding a tool
 
-Create `src/tools/{domain}.ts`. Export `register{Domain}Tools(server, client)` and call it in `buildServer()` in `src/index.ts`. Use any existing tool file as the template.
+Add a file under `src/tools/<domain>/` and wire it in the domain's `index.ts` — or create a new domain folder (`index.ts`, `schemas.ts`, tool file, colocated test) exporting `register<Domain>Tools(registry, client)` and call it in `buildServer()` in `src/server.ts`. `index.ts` is the domain's only entry point; never import a sibling domain (shared code goes in `src/tools/helpers.ts`). Use any existing tool file as the template.
 
 After adding or modifying any tool you MUST do all three steps before finishing:
 1. `/mcp` → Reconnect (Claude Code spawns the stdio server once — edits are invisible until you reconnect)
@@ -68,6 +68,7 @@ No hook enforces this — it is entirely your responsibility. Skipping step 1 me
 | `GATEWAY_SECRET` | ❌ | Required when `CREDENTIAL_PROVIDER=header` |
 | `ACCESS_ENFORCEMENT` | ❌ | `on` or `off` (default). Gateway mode only: write tools require the access header per request (default-deny). Env/stdio always behaves as write. |
 | `ACCESS_HEADER` | ❌ | Header carrying per-request access (default `x-mcp-access`) |
+| `TOOLSETS_HEADER` | ❌ | Header naming the toolsets (domain folders) a new session registers, comma-separated (default `x-mcp-toolsets`). Gateway mode only; fail-open UX scoping, not a security boundary. |
 
 ¹ Required when `SN_AUTH_TYPE=basic` or `SN_GRANT_TYPE=password`  
 ² Required when `SN_AUTH_TYPE=oauth`
