@@ -3,6 +3,7 @@ import type { ServiceNowClient } from './clients/servicenow.js';
 import { registerAtfTools } from './tools/atf/index.js';
 import { registerCatalogTools } from './tools/catalog/index.js';
 import { registerDiagnosticsTools } from './tools/diagnostics/index.js';
+import { registerEventTools } from './tools/events/index.js';
 import { registerRecordTools } from './tools/records/index.js';
 import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
 import { registerScriptTools } from './tools/scripts/index.js';
@@ -24,6 +25,7 @@ export function buildServer(
   registerDiagnosticsTools(registry, snClient);
   registerRecordTools(registry, snClient);
   registerAtfTools(registry, snClient);
+  registerEventTools(registry, snClient);
 
   return { server, registry };
 }

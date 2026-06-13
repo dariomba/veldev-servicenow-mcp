@@ -34,6 +34,7 @@ export const TOOLSETS = [
   'atf',
   'catalog',
   'diagnostics',
+  'events',
   'records',
   'scripts',
   'update-sets',

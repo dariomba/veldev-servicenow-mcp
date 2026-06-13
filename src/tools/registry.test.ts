@@ -86,6 +86,14 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "scripts",
         },
+        "create_event_queue": {
+          "access": "write",
+          "group": "events",
+        },
+        "create_event_registration": {
+          "access": "write",
+          "group": "events",
+        },
         "create_fix_script": {
           "access": "write",
           "group": "diagnostics",
@@ -110,6 +118,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "diagnostics",
         },
+        "create_script_action": {
+          "access": "write",
+          "group": "events",
+        },
         "create_script_include": {
           "access": "write",
           "group": "scripts",
@@ -130,6 +142,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "catalog",
         },
+        "fire_event": {
+          "access": "write",
+          "group": "events",
+        },
         "get_atf_step_config_schema": {
           "access": "read",
           "group": "atf",
@@ -145,6 +161,10 @@ describe('tool inventory', () => {
         "get_current_update_set": {
           "access": "read",
           "group": "update-sets",
+        },
+        "get_event": {
+          "access": "read",
+          "group": "events",
         },
         "get_record": {
           "access": "read",
@@ -174,6 +194,14 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "catalog",
         },
+        "list_event_queues": {
+          "access": "read",
+          "group": "events",
+        },
+        "list_events": {
+          "access": "read",
+          "group": "events",
+        },
         "list_flows": {
           "access": "read",
           "group": "catalog",
@@ -181,6 +209,10 @@ describe('tool inventory', () => {
         "list_scheduled_jobs": {
           "access": "read",
           "group": "diagnostics",
+        },
+        "list_script_actions": {
+          "access": "read",
+          "group": "events",
         },
         "list_update_sets": {
           "access": "read",
@@ -242,6 +274,14 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "scripts",
         },
+        "update_event_queue": {
+          "access": "write",
+          "group": "events",
+        },
+        "update_event_registration": {
+          "access": "write",
+          "group": "events",
+        },
         "update_fix_script": {
           "access": "write",
           "group": "diagnostics",
@@ -265,6 +305,10 @@ describe('tool inventory', () => {
         "update_scheduled_script": {
           "access": "write",
           "group": "diagnostics",
+        },
+        "update_script_action": {
+          "access": "write",
+          "group": "events",
         },
         "update_script_include": {
           "access": "write",
