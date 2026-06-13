@@ -94,6 +94,18 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "catalog",
         },
+        "create_scheduled_record_generation": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_scheduled_report": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "create_scheduled_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
         "create_script_include": {
           "access": "write",
           "group": "scripts",
@@ -134,6 +146,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "records",
         },
+        "get_scheduled_job": {
+          "access": "read",
+          "group": "diagnostics",
+        },
         "list_atf_step_configs": {
           "access": "read",
           "group": "atf",
@@ -158,6 +174,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "catalog",
         },
+        "list_scheduled_jobs": {
+          "access": "read",
+          "group": "diagnostics",
+        },
         "list_update_sets": {
           "access": "read",
           "group": "update-sets",
@@ -179,6 +199,10 @@ describe('tool inventory', () => {
           "group": "catalog",
         },
         "run_fix_script": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "run_scheduled_job": {
           "access": "write",
           "group": "diagnostics",
         },
@@ -221,6 +245,18 @@ describe('tool inventory', () => {
         "update_record_producer": {
           "access": "write",
           "group": "catalog",
+        },
+        "update_scheduled_record_generation": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_scheduled_report": {
+          "access": "write",
+          "group": "diagnostics",
+        },
+        "update_scheduled_script": {
+          "access": "write",
+          "group": "diagnostics",
         },
         "update_script_include": {
           "access": "write",

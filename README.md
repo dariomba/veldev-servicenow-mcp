@@ -11,12 +11,12 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-51 tools across 12 domains:
+60 tools across 13 domains:
 
 | Domain | What it covers |
 |---|---|
 | **Catalog (read)** | Browse items, get full definitions with variables, UI policies, client scripts, user criteria, variable sets |
-| **Catalog (write)** | Create items, add/update variables, manage variable sets |
+| **Catalog (write)** | Create items, add/update variables, manage variable sets, attach user criteria |
 | **Record producers** | Create and update record producers (catalog forms that generate records in any table) |
 | **UI policies** | Create and update catalog UI policies and their actions |
 | **Client scripts** | Create and manage catalog client scripts |
@@ -25,6 +25,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Update sets** | Show the active update set, list update sets by state/scope/name, create a new set, and switch the current set for the authenticated user |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
+| **Scheduled jobs** | Create, update, list, get, and run-now scheduled jobs (`sysauto`) — script executions, scheduled emails of reports, and template-based record generation |
 | **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 | **ATF (Automated Test Framework)** | Create tests and suites, add and configure steps with cross-step output mapping, browse step configs and their input/output schemas |
 
