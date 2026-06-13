@@ -82,6 +82,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "catalog",
         },
+        "create_client_script": {
+          "access": "write",
+          "group": "scripts",
+        },
         "create_fix_script": {
           "access": "write",
           "group": "diagnostics",
@@ -233,6 +237,10 @@ describe('tool inventory', () => {
         "update_catalog_item": {
           "access": "write",
           "group": "catalog",
+        },
+        "update_client_script": {
+          "access": "write",
+          "group": "scripts",
         },
         "update_fix_script": {
           "access": "write",
