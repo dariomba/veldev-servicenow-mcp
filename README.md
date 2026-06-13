@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-60 tools across 13 domains:
+62 tools across 13 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -19,9 +19,10 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Catalog (write)** | Create items, add/update variables, manage variable sets, attach user criteria |
 | **Record producers** | Create and update record producers (catalog forms that generate records in any table) |
 | **UI policies** | Create and update catalog UI policies and their actions |
-| **Client scripts** | Create and manage catalog client scripts |
+| **Client scripts (catalog)** | Create and manage catalog client scripts |
 | **Script includes** | Create reusable server-side script includes |
 | **Business rules** | Create business rules with before/after/async modes |
+| **Client scripts (form)** | Create and update table client scripts (`sys_script_client`) — onLoad / onChange / onSubmit / onCellEdit |
 | **Update sets** | Show the active update set, list update sets by state/scope/name, create a new set, and switch the current set for the authenticated user |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
@@ -214,6 +215,8 @@ What client scripts are on the New Employee Onboarding item?
 Create a new catalog item called "VPN Access Request" with a text variable for business justification
 
 Create a business rule on incident that sets priority to 1 when impact and urgency are both 1
+
+Create an onLoad client script on incident that shows an info message when the priority is 1 - Critical
 
 Create a record producer called "New Hire Equipment" that generates an sc_req_item record, with a pre-insert script that maps the selected laptop model to the item field
 

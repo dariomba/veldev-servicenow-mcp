@@ -1,6 +1,7 @@
 import type { ServiceNowClient } from '../../clients/servicenow.js';
 import type { ToolRegistry } from '../registry.js';
 import { registerBusinessRuleTools } from './business-rules.js';
+import { registerClientScriptTools } from './client-scripts.js';
 import { registerScriptIncludeTools } from './script-includes.js';
 
 export function registerScriptTools(
@@ -10,4 +11,5 @@ export function registerScriptTools(
   const scripts = registry.scoped('scripts');
   registerScriptIncludeTools(scripts, client);
   registerBusinessRuleTools(scripts, client);
+  registerClientScriptTools(scripts, client);
 }
