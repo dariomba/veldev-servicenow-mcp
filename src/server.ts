@@ -1,12 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ServiceNowClient } from './clients/servicenow.js';
 import { registerAtfTools } from './tools/atf/index.js';
+import { registerBusinessRulesTools } from './tools/business-rules/index.js';
 import { registerCatalogTools } from './tools/catalog/index.js';
+import { registerClientScriptsTools } from './tools/client-scripts/index.js';
 import { registerDiagnosticsTools } from './tools/diagnostics/index.js';
 import { registerEventTools } from './tools/events/index.js';
 import { registerRecordTools } from './tools/records/index.js';
 import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
-import { registerScriptTools } from './tools/scripts/index.js';
+import { registerScriptIncludesTools } from './tools/script-includes/index.js';
 import { registerUpdateSetTools } from './tools/update-sets/index.js';
 
 export function buildServer(
@@ -20,7 +22,9 @@ export function buildServer(
   const registry = new ToolRegistry(server, registryOptions);
 
   registerCatalogTools(registry, snClient);
-  registerScriptTools(registry, snClient);
+  registerBusinessRulesTools(registry, snClient);
+  registerClientScriptsTools(registry, snClient);
+  registerScriptIncludesTools(registry, snClient);
   registerUpdateSetTools(registry, snClient);
   registerDiagnosticsTools(registry, snClient);
   registerRecordTools(registry, snClient);

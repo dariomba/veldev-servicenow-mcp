@@ -311,7 +311,7 @@ For production self-hosting:
 In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
 
 - **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
-- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `events`, `records`, `scripts`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `business-rules`, `catalog`, `client-scripts`, `diagnostics`, `events`, `records`, `script-includes`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 
