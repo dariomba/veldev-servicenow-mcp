@@ -11,18 +11,19 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-73 tools across 14 domains:
+81 tools across 15 domains:
 
 | Domain | What it covers |
 |---|---|
 | **Catalog (read)** | Browse items, get full definitions with variables, UI policies, client scripts, user criteria, variable sets |
 | **Catalog (write)** | Create items, add/update variables, manage variable sets, attach user criteria |
 | **Record producers** | Create and update record producers (catalog forms that generate records in any table) |
-| **UI policies** | Create and update catalog UI policies and their actions |
+| **UI policies (catalog)** | Create and update catalog UI policies and their actions |
 | **Client scripts (catalog)** | Create and manage catalog client scripts |
 | **Script includes** | Create reusable server-side script includes |
 | **Business rules** | Create business rules with before/after/async modes |
 | **Client scripts (form)** | Create and update table client scripts (`sys_script_client`) — onLoad / onChange / onSubmit / onCellEdit |
+| **UI policies (form)** | List, get, create, and update form/table UI policies (`sys_ui_policy`); batch-create and update their field actions (`sys_ui_policy_action`) and related list actions (`sys_ui_policy_rl_action`) |
 | **Update sets** | Show the active update set, list update sets by state/scope/name, create a new set, and switch the current set for the authenticated user |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
@@ -219,6 +220,8 @@ Create a business rule on incident that sets priority to 1 when impact and urgen
 
 Create an onLoad client script on incident that shows an info message when the priority is 1 - Critical
 
+Create a UI policy on incident that makes caller and assignment group mandatory when priority is 1, and hides the Child Incidents related list
+
 Create a record producer called "New Hire Equipment" that generates an sc_req_item record, with a pre-insert script that maps the selected laptop model to the item field
 
 Create a fix script called "Backfill Incident SLAs" that queries all incidents missing an SLA and sets a default one
@@ -311,7 +314,7 @@ For production self-hosting:
 In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
 
 - **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
-- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `business-rules`, `catalog`, `client-scripts`, `diagnostics`, `events`, `records`, `script-includes`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `events`, `records`, `script-includes`, `ui-policies`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 
