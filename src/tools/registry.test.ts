@@ -98,6 +98,18 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "diagnostics",
         },
+        "create_form_ui_policy": {
+          "access": "write",
+          "group": "ui-policies",
+        },
+        "create_form_ui_policy_actions": {
+          "access": "write",
+          "group": "ui-policies",
+        },
+        "create_form_ui_policy_rl_actions": {
+          "access": "write",
+          "group": "ui-policies",
+        },
         "create_record": {
           "access": "write",
           "group": "records",
@@ -166,6 +178,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "events",
         },
+        "get_form_ui_policy": {
+          "access": "read",
+          "group": "ui-policies",
+        },
         "get_record": {
           "access": "read",
           "group": "records",
@@ -205,6 +221,10 @@ describe('tool inventory', () => {
         "list_flows": {
           "access": "read",
           "group": "catalog",
+        },
+        "list_form_ui_policies": {
+          "access": "read",
+          "group": "ui-policies",
         },
         "list_scheduled_jobs": {
           "access": "read",
@@ -285,6 +305,18 @@ describe('tool inventory', () => {
         "update_fix_script": {
           "access": "write",
           "group": "diagnostics",
+        },
+        "update_form_ui_policy": {
+          "access": "write",
+          "group": "ui-policies",
+        },
+        "update_form_ui_policy_action": {
+          "access": "write",
+          "group": "ui-policies",
+        },
+        "update_form_ui_policy_rl_action": {
+          "access": "write",
+          "group": "ui-policies",
         },
         "update_record": {
           "access": "write",

@@ -7,6 +7,7 @@ import { registerEventTools } from './tools/events/index.js';
 import { registerRecordTools } from './tools/records/index.js';
 import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
 import { registerScriptTools } from './tools/scripts/index.js';
+import { registerUiPolicyToolset } from './tools/ui-policies/index.js';
 import { registerUpdateSetTools } from './tools/update-sets/index.js';
 
 export function buildServer(
@@ -26,6 +27,7 @@ export function buildServer(
   registerRecordTools(registry, snClient);
   registerAtfTools(registry, snClient);
   registerEventTools(registry, snClient);
+  registerUiPolicyToolset(registry, snClient);
 
   return { server, registry };
 }
