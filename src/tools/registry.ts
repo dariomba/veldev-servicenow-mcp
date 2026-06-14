@@ -32,11 +32,13 @@ export type AccessEnforcementMode = 'enforce' | 'observe' | 'off';
 /** A toolset is exactly a domain folder under src/tools/. */
 export const TOOLSETS = [
   'atf',
+  'business-rules',
   'catalog',
+  'client-scripts',
   'diagnostics',
   'events',
   'records',
-  'scripts',
+  'script-includes',
   'update-sets',
 ] as const;
 

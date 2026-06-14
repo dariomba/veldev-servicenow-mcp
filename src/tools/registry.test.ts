@@ -76,7 +76,7 @@ describe('tool inventory', () => {
         },
         "create_business_rule": {
           "access": "write",
-          "group": "scripts",
+          "group": "business-rules",
         },
         "create_catalog_item": {
           "access": "write",
@@ -84,7 +84,7 @@ describe('tool inventory', () => {
         },
         "create_client_script": {
           "access": "write",
-          "group": "scripts",
+          "group": "client-scripts",
         },
         "create_event_queue": {
           "access": "write",
@@ -124,7 +124,7 @@ describe('tool inventory', () => {
         },
         "create_script_include": {
           "access": "write",
-          "group": "scripts",
+          "group": "script-includes",
         },
         "create_update_set": {
           "access": "write",
@@ -260,7 +260,7 @@ describe('tool inventory', () => {
         },
         "update_business_rule": {
           "access": "write",
-          "group": "scripts",
+          "group": "business-rules",
         },
         "update_catalog_client_script": {
           "access": "write",
@@ -272,7 +272,7 @@ describe('tool inventory', () => {
         },
         "update_client_script": {
           "access": "write",
-          "group": "scripts",
+          "group": "client-scripts",
         },
         "update_event_queue": {
           "access": "write",
@@ -312,7 +312,7 @@ describe('tool inventory', () => {
         },
         "update_script_include": {
           "access": "write",
-          "group": "scripts",
+          "group": "script-includes",
         },
         "update_ui_policy": {
           "access": "write",
@@ -461,8 +461,8 @@ describe('parseAllowedToolsets', () => {
   });
 
   it('valid subset, trimmed and case-insensitive', () => {
-    expect(parseAllowedToolsets(' Catalog , SCRIPTS ')).toEqual(
-      new Set(['catalog', 'scripts']),
+    expect(parseAllowedToolsets(' Catalog , BUSINESS-RULES ')).toEqual(
+      new Set(['catalog', 'business-rules']),
     );
   });
 
