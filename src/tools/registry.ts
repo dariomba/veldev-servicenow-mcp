@@ -38,6 +38,7 @@ export const TOOLSETS = [
   'diagnostics',
   'events',
   'inbound-actions',
+  'notifications',
   'records',
   'script-includes',
   'ui-actions',

@@ -86,6 +86,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "client-scripts",
         },
+        "create_email_script": {
+          "access": "write",
+          "group": "notifications",
+        },
         "create_event_queue": {
           "access": "write",
           "group": "events",
@@ -113,6 +117,10 @@ describe('tool inventory', () => {
         "create_inbound_action": {
           "access": "write",
           "group": "inbound-actions",
+        },
+        "create_notification": {
+          "access": "write",
+          "group": "notifications",
         },
         "create_record": {
           "access": "write",
@@ -182,6 +190,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "update-sets",
         },
+        "get_email_script": {
+          "access": "read",
+          "group": "notifications",
+        },
         "get_event": {
           "access": "read",
           "group": "events",
@@ -193,6 +205,10 @@ describe('tool inventory', () => {
         "get_inbound_action": {
           "access": "read",
           "group": "inbound-actions",
+        },
+        "get_notification": {
+          "access": "read",
+          "group": "notifications",
         },
         "get_record": {
           "access": "read",
@@ -226,6 +242,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "catalog",
         },
+        "list_email_scripts": {
+          "access": "read",
+          "group": "notifications",
+        },
         "list_event_queues": {
           "access": "read",
           "group": "events",
@@ -245,6 +265,10 @@ describe('tool inventory', () => {
         "list_inbound_actions": {
           "access": "read",
           "group": "inbound-actions",
+        },
+        "list_notifications": {
+          "access": "read",
+          "group": "notifications",
         },
         "list_scheduled_jobs": {
           "access": "read",
@@ -318,6 +342,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "client-scripts",
         },
+        "update_email_script": {
+          "access": "write",
+          "group": "notifications",
+        },
         "update_event_queue": {
           "access": "write",
           "group": "events",
@@ -345,6 +373,10 @@ describe('tool inventory', () => {
         "update_inbound_action": {
           "access": "write",
           "group": "inbound-actions",
+        },
+        "update_notification": {
+          "access": "write",
+          "group": "notifications",
         },
         "update_record": {
           "access": "write",
