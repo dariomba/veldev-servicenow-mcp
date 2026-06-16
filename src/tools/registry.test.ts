@@ -276,7 +276,7 @@ describe('tool inventory', () => {
         },
         "resolve_table": {
           "access": "read",
-          "group": "catalog",
+          "group": "records",
         },
         "run_fix_script": {
           "access": "write",
