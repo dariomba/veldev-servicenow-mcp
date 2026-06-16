@@ -39,6 +39,7 @@ export const TOOLSETS = [
   'events',
   'records',
   'script-includes',
+  'ui-actions',
   'ui-policies',
   'update-sets',
 ] as const;

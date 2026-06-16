@@ -138,6 +138,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "script-includes",
         },
+        "create_ui_action": {
+          "access": "write",
+          "group": "ui-actions",
+        },
         "create_update_set": {
           "access": "write",
           "group": "update-sets",
@@ -190,6 +194,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "diagnostics",
         },
+        "get_ui_action": {
+          "access": "read",
+          "group": "ui-actions",
+        },
         "list_atf_step_configs": {
           "access": "read",
           "group": "atf",
@@ -233,6 +241,10 @@ describe('tool inventory', () => {
         "list_script_actions": {
           "access": "read",
           "group": "events",
+        },
+        "list_ui_actions": {
+          "access": "read",
+          "group": "ui-actions",
         },
         "list_update_sets": {
           "access": "read",
@@ -345,6 +357,10 @@ describe('tool inventory', () => {
         "update_script_include": {
           "access": "write",
           "group": "script-includes",
+        },
+        "update_ui_action": {
+          "access": "write",
+          "group": "ui-actions",
         },
         "update_ui_policy": {
           "access": "write",
