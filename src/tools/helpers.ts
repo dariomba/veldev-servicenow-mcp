@@ -59,6 +59,26 @@ export function requireSysId(value: string, label: string): string | null {
   return isSysId(value) ? null : `"${value}" is not a valid ${label}.`;
 }
 
+/**
+ * Builds a Table API request body from a tool's input: for each field name in
+ * `fields`, copies the value through when it is defined, serialising booleans
+ * and numbers to the strings the Table API expects (strings pass through
+ * untouched). `fields` is typically `Object.keys(SomeBase.shape)` so the Zod
+ * schema stays the single source of truth for the column list.
+ */
+export function serializeFields(
+  input: Record<string, unknown>,
+  fields: readonly string[],
+): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  for (const f of fields) {
+    const v = input[f];
+    if (v === undefined) continue;
+    body[f] = typeof v === 'string' ? v : String(v);
+  }
+  return body;
+}
+
 export function handleError(err: unknown) {
   if (err instanceof SnApiError) {
     return {
