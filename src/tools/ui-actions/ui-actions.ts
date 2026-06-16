@@ -8,6 +8,7 @@ import {
   requireSysId,
   resolveValue,
   richResult,
+  serializeFields,
   textResult,
   val,
 } from '../helpers.js';
@@ -88,13 +89,7 @@ function buildBody(
   input: UiActionInput,
   toggle: boolean | undefined,
 ): UiActionInput {
-  const body: UiActionInput = {};
-  for (const f of UI_ACTION_FIELDS) {
-    const v = input[f];
-    if (v === undefined) continue;
-    // The Table API takes strings; booleans and the numeric order serialise.
-    body[f] = typeof v === 'string' ? v : String(v);
-  }
+  const body = serializeFields(input, UI_ACTION_FIELDS);
   // The toggle may have been forced on by the workspace guardrail.
   if (toggle !== undefined)
     body.format_for_configurable_workspace = String(toggle);

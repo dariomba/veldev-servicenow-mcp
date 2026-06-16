@@ -6,6 +6,7 @@ import { registerCatalogTools } from './tools/catalog/index.js';
 import { registerClientScriptsTools } from './tools/client-scripts/index.js';
 import { registerDiagnosticsTools } from './tools/diagnostics/index.js';
 import { registerEventTools } from './tools/events/index.js';
+import { registerInboundActionsToolset } from './tools/inbound-actions/index.js';
 import { registerRecordTools } from './tools/records/index.js';
 import { ToolRegistry, type ToolRegistryOptions } from './tools/registry.js';
 import { registerScriptIncludesTools } from './tools/script-includes/index.js';
@@ -32,6 +33,7 @@ export function buildServer(
   registerRecordTools(registry, snClient);
   registerAtfTools(registry, snClient);
   registerEventTools(registry, snClient);
+  registerInboundActionsToolset(registry, snClient);
   registerUiActionsToolset(registry, snClient);
   registerUiPolicyToolset(registry, snClient);
 

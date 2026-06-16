@@ -110,6 +110,10 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "ui-policies",
         },
+        "create_inbound_action": {
+          "access": "write",
+          "group": "inbound-actions",
+        },
         "create_record": {
           "access": "write",
           "group": "records",
@@ -186,6 +190,10 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "ui-policies",
         },
+        "get_inbound_action": {
+          "access": "read",
+          "group": "inbound-actions",
+        },
         "get_record": {
           "access": "read",
           "group": "records",
@@ -233,6 +241,10 @@ describe('tool inventory', () => {
         "list_form_ui_policies": {
           "access": "read",
           "group": "ui-policies",
+        },
+        "list_inbound_actions": {
+          "access": "read",
+          "group": "inbound-actions",
         },
         "list_scheduled_jobs": {
           "access": "read",
@@ -329,6 +341,10 @@ describe('tool inventory', () => {
         "update_form_ui_policy_rl_action": {
           "access": "write",
           "group": "ui-policies",
+        },
+        "update_inbound_action": {
+          "access": "write",
+          "group": "inbound-actions",
         },
         "update_record": {
           "access": "write",
