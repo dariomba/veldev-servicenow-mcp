@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-81 tools across 15 domains:
+89 tools across 18 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -24,11 +24,13 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Business rules** | Create business rules with before/after/async modes |
 | **Client scripts (form)** | Create and update table client scripts (`sys_script_client`) — onLoad / onChange / onSubmit / onCellEdit |
 | **UI policies (form)** | List, get, create, and update form/table UI policies (`sys_ui_policy`); batch-create and update their field actions (`sys_ui_policy_action`) and related list actions (`sys_ui_policy_rl_action`) |
+| **UI actions** | List, get, create, and update UI actions (`sys_ui_action`) — form/list buttons, links, and context-menu items, including Configurable Workspace placement |
 | **Update sets** | Show the active update set, list update sets by state/scope/name, create a new set, and switch the current set for the authenticated user |
 | **Background scripts** | Schedule server-side JavaScript snippets via `sys_trigger` |
 | **Fix scripts** | Create, update, and run `sys_script_fix` records — stored server-side scripts for data and config repairs |
 | **Scheduled jobs** | Create, update, list, get, and run-now scheduled jobs (`sysauto`) — script executions, scheduled emails of reports, and template-based record generation |
 | **Events** | Register events (`sysevent_register`), create custom processing queues (`sysevent_queue`) and script actions (`sysevent_script_action`), fire events at runtime via `gs.eventQueue()`, and list/get any of them |
+| **Inbound email actions** | List, get, create, and update inbound email actions (`sysevent_in_email_action`) — server-side scripts that run when ServiceNow receives a New, Reply, or Forward email |
 | **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 | **ATF (Automated Test Framework)** | Create tests and suites, add and configure steps with cross-step output mapping, browse step configs and their input/output schemas |
 
@@ -314,7 +316,7 @@ For production self-hosting:
 In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
 
 - **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
-- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `catalog`, `diagnostics`, `events`, `records`, `script-includes`, `ui-policies`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `business-rules`, `catalog`, `client-scripts`, `diagnostics`, `events`, `inbound-actions`, `records`, `script-includes`, `ui-actions`, `ui-policies`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 
