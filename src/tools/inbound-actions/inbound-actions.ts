@@ -8,6 +8,7 @@ import {
   requireSysId,
   resolveValue,
   richResult,
+  serializeFields,
   textResult,
   val,
 } from '../helpers.js';
@@ -23,18 +24,6 @@ import {
 const TABLE = 'sysevent_in_email_action';
 
 type InboundActionInput = Record<string, unknown>;
-
-/** Builds the Table API body from the supplied (already-defaulted) input. */
-function buildBody(input: InboundActionInput): InboundActionInput {
-  const body: InboundActionInput = {};
-  for (const f of INBOUND_ACTION_FIELDS) {
-    const v = input[f];
-    if (v === undefined) continue;
-    // The Table API takes strings; booleans and the numeric order serialise.
-    body[f] = typeof v === 'string' ? v : String(v);
-  }
-  return body;
-}
 
 /**
  * Type-specific guardrails shared by create and update. Returns the warning
@@ -117,7 +106,7 @@ export function registerInboundActionTools(
           );
         }
 
-        const body = buildBody(input);
+        const body = serializeFields(input, INBOUND_ACTION_FIELDS);
         const record = await client.createRecord<SnRecord>(TABLE, body);
         const sys_id = val(record, 'sys_id');
 
@@ -169,7 +158,7 @@ export function registerInboundActionTools(
         const idErr = requireSysId(sys_id, 'sysevent_in_email_action sys_id');
         if (idErr) return errText(idErr);
 
-        const body = buildBody(input);
+        const body = serializeFields(input, INBOUND_ACTION_FIELDS);
         if (Object.keys(body).length === 0) {
           return textResult('No fields to update — all values were omitted.');
         }
