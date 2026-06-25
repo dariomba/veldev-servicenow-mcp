@@ -118,9 +118,17 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "inbound-actions",
         },
+        "create_message": {
+          "access": "write",
+          "group": "messages",
+        },
         "create_notification": {
           "access": "write",
           "group": "notifications",
+        },
+        "create_property": {
+          "access": "write",
+          "group": "properties",
         },
         "create_record": {
           "access": "write",
@@ -206,9 +214,21 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "inbound-actions",
         },
+        "get_log": {
+          "access": "read",
+          "group": "logs",
+        },
+        "get_message": {
+          "access": "read",
+          "group": "messages",
+        },
         "get_notification": {
           "access": "read",
           "group": "notifications",
+        },
+        "get_property": {
+          "access": "read",
+          "group": "properties",
         },
         "get_record": {
           "access": "read",
@@ -266,9 +286,21 @@ describe('tool inventory', () => {
           "access": "read",
           "group": "inbound-actions",
         },
+        "list_logs": {
+          "access": "read",
+          "group": "logs",
+        },
+        "list_messages": {
+          "access": "read",
+          "group": "messages",
+        },
         "list_notifications": {
           "access": "read",
           "group": "notifications",
+        },
+        "list_properties": {
+          "access": "read",
+          "group": "properties",
         },
         "list_scheduled_jobs": {
           "access": "read",
@@ -374,9 +406,17 @@ describe('tool inventory', () => {
           "access": "write",
           "group": "inbound-actions",
         },
+        "update_message": {
+          "access": "write",
+          "group": "messages",
+        },
         "update_notification": {
           "access": "write",
           "group": "notifications",
+        },
+        "update_property": {
+          "access": "write",
+          "group": "properties",
         },
         "update_record": {
           "access": "write",
