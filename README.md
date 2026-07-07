@@ -11,7 +11,7 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 
 ## Features
 
-97 tools across 19 domains:
+107 tools across 22 domains:
 
 | Domain | What it covers |
 |---|---|
@@ -32,6 +32,9 @@ Built and maintained by **Veldev** — an AI assistant for ServiceNow developers
 | **Events** | Register events (`sysevent_register`), create custom processing queues (`sysevent_queue`) and script actions (`sysevent_script_action`), fire events at runtime via `gs.eventQueue()`, and list/get any of them |
 | **Inbound email actions** | List, get, create, and update inbound email actions (`sysevent_in_email_action`) — server-side scripts that run when ServiceNow receives a New, Reply, or Forward email |
 | **Notifications** | List, get, create, and update email notifications (`sysevent_email_action`) — outbound mail rules triggered on insert/update or by an event — and reusable email scripts (`sys_script_email`) embedded in a body via `${mail_script:<name>}` (`create_notification`, `update_notification`, `list_notifications`, `get_notification`, `create_email_script`, `update_email_script`, `list_email_scripts`, `get_email_script`) |
+| **Properties** | List, get, create, and update system properties (`sys_properties`) — named configuration values read at runtime with `gs.getProperty(name)`; keyed by `name`, with warnings when an integer/boolean property's value doesn't match its type (`create_property`, `update_property`, `list_properties`, `get_property`) |
+| **Messages** | List, get, create, and update UI/system messages (`sys_ui_message`) — localizable text looked up at runtime with `gs.getMessage(key)`; one record per `key`+`language` (defaults to `en`) (`create_message`, `update_message`, `list_messages`, `get_message`) |
+| **Logs (read)** | List and get system & application log entries from `syslog` (and the scoped-app `syslog_app_scope` it extends) — filter by minimum severity level (trace→fatal), source/message substring, time window, and scope; the debugging counterpart to the write tools (`list_logs`, `get_log`) |
 | **Generic Table CRUD** | Query, fetch, create, and update records in any ServiceNow table |
 | **ATF (Automated Test Framework)** | Create tests and suites, add and configure steps with cross-step output mapping, browse step configs and their input/output schemas |
 
@@ -317,7 +320,7 @@ For production self-hosting:
 In gateway mode (`CREDENTIAL_PROVIDER=header`) the server trusts two headers set by the proxy in front of it. They are only meaningful behind an authenticating proxy that sets them itself and strips any client-supplied values — never expose the server directly to clients with these headers enabled.
 
 - **`X-MCP-Access`** (security boundary) — per-request write grant. With `ACCESS_ENFORCEMENT=on`, a write tool call is denied unless the request carries this header with value `write` (default-deny, checked on every request).
-- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `business-rules`, `catalog`, `client-scripts`, `diagnostics`, `events`, `inbound-actions`, `notifications`, `records`, `script-includes`, `ui-actions`, `ui-policies`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
+- **`X-MCP-Toolsets`** (UX, not security) — comma-separated toolset names (`atf`, `business-rules`, `catalog`, `client-scripts`, `diagnostics`, `events`, `inbound-actions`, `logs`, `messages`, `notifications`, `properties`, `records`, `script-includes`, `ui-actions`, `ui-policies`, `update-sets`), read once from the session-creating request. Only the named toolsets' tools are registered for that session, trimming the tool list the model sees. Unknown names are ignored with a warning; if the header resolves to no known toolset, all toolsets register (fail-open). This filter never denies anything — write protection is `X-MCP-Access`'s job.
 
 ---
 
