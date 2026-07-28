@@ -33,7 +33,7 @@
     "check": "biome check --write ."
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.10.2",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "dotenv": "^17.4.2",
     "zod": "^4.4.3"
   },
